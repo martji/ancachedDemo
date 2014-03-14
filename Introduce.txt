@@ -1,2 +1,5 @@
 Huang Huan
 2014/3/13
+
+关于.gitignore的使用
+1.所有的.class文件均无需上传
