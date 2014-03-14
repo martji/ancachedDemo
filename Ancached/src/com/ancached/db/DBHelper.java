@@ -12,8 +12,8 @@ public class DBHelper {
 	/**
 	 * @param args
 	 */
-	public final static String URL = "data/data/com.example.ancached/files";
-	private static final String DB_FILE_NAME = "test.db";
+	public final static String URL = "data/data/com.example.ancached/datas";
+	private static final String DB_FILE_NAME = "trackLogs.db";
 	private String fileName;
 	private Context context;
 	private SQLiteDatabase db;

@@ -1,8 +1,16 @@
 package com.example.ancached;
 
+import com.ancached.db.LogManager;
+import com.ancached.db.TrackLogItem;
+import com.ancached.model.CacheManager;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo.State;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -57,6 +65,26 @@ public class WebViewActivity extends Activity{
 			                Toast.makeText(WebViewActivity.this, 
 			                		"Oh no! " + description, Toast.LENGTH_SHORT).show();  
 			            }
+			            public void onPageFinished (WebView view, String url){
+			            	String page_url = view.getUrl();
+			            	String page_title = view.getTitle();
+			            	Time page_vt = new Time("GMT+8");
+			            	page_vt.setToNow();
+			            	int page_netState = getNetState();
+			            	String page_loc = getLocation();
+			            	final TrackLogItem item = new TrackLogItem(page_url, page_title, page_vt, page_netState, page_loc);
+			            	LogManager.pushLog(item);
+			            	
+			            	//prefetch thread
+			            	new Thread(new Runnable() {
+								@Override
+								public void run() {
+									// TODO Auto-generated method stub
+									String pre_url = CacheManager.getUrl(item);
+									Log.e("preUrl", pre_url);
+								}
+							}).start();
+			            }
 			        });  
 			}
 		});
@@ -70,4 +98,21 @@ public class WebViewActivity extends Activity{
         }  
         return super.onKeyDown(keyCode, event);
     }
+	
+	public int getNetState(){
+		ConnectivityManager conMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        State mobile = conMan.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState();
+        State wifi = conMan.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
+        if(wifi==State.CONNECTED){
+        	return 1;
+        }
+        else if(mobile==State.CONNECTED){
+        	return 2;
+        }
+		return 0;
+	}
+	
+	public String getLocation(){
+		return "";
+	}
 }
