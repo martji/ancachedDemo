@@ -1,5 +1,7 @@
 package com.ancached.model;
 
+import java.util.List;
+
 import com.ancached.db.TrackLogItem;
 
 public class CacheManager {
@@ -14,7 +16,13 @@ public class CacheManager {
 
 	public static String getUrl(TrackLogItem item) {
 		// TODO Auto-generated method stub
-		return null;
+		return "";
+	}
+
+	//根据浏览记录预测下一个页面
+	public static String getUrl(List<TrackLogItem> result) {
+		// TODO Auto-generated method stub
+		return "";
 	}
 
 }

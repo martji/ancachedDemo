@@ -1,7 +1,5 @@
 package com.ancached.db;
 
-import android.text.format.Time;
-
 public class TrackLogItem {
 
 	/**
@@ -14,16 +12,25 @@ public class TrackLogItem {
 	
 	private String url;
 	private String title;
-	private Time vTime;
+	private STime vTime;
 	private int netState;
 	private String location;
 	
-	public TrackLogItem(String url, String title, Time vTime, int netState, String location){
+	public TrackLogItem(String url, String title, String vTime, int netState, String location){
 		this.url = url;
 		this.title = title;
-		this.vTime = vTime;
+		this.vTime = new STime(vTime);
 		this.netState = netState;
 		this.setLocation(location);
+	}
+
+	public TrackLogItem(String url, String title, String vTime, int netState) {
+		// TODO Auto-generated constructor stub
+		this.url = url;
+		this.title = title;
+		this.vTime = new STime(vTime);
+		this.netState = netState;
+		this.location = "";
 	}
 
 	public String getUrl() {
@@ -35,6 +42,9 @@ public class TrackLogItem {
 	}
 
 	public String getTitle() {
+		if (title == null){
+			return "";
+		}
 		return title;
 	}
 
@@ -42,11 +52,11 @@ public class TrackLogItem {
 		this.title = title;
 	}
 
-	public Time getvTime() {
+	public STime getvTime() {
 		return vTime;
 	}
 
-	public void setvTime(Time vTime) {
+	public void setvTime(STime vTime) {
 		this.vTime = vTime;
 	}
 

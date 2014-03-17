@@ -6,10 +6,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Vector;
+
+import com.ancached.db.TrackLogItem;
 import com.example.ancached.R;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 public class DatabaseHelper {
 
@@ -39,6 +42,28 @@ public class DatabaseHelper {
 		return result;
 	}
 	
+	public void insertTable(TrackLogItem item){
+		String sql = "insert into tracklog values(?,?,?,?)";
+		Object[] args = new Object[]{item.getUrl(), item.getTitle(), 
+				item.getvTime().getStr(), item.getNetState()};
+		Log.e("url", item.getUrl());
+		Log.e("title", item.getTitle());
+		Log.e("vtime", item.getvTime().getStr());
+		Log.e("net", Integer.toString(item.getNetState()));
+		db.execSQL(sql, args);
+	}
+	
+	public Vector<TrackLogItem> selectTable() {
+		String sql = "select * from tracklog";
+		Vector<TrackLogItem> items = new Vector<TrackLogItem>();
+		Cursor cursor = db.rawQuery(sql, null);
+		while(cursor.moveToNext()){
+			items.add(new TrackLogItem(cursor.getString(0), cursor.getString(1), 
+					cursor.getString(2), cursor.getInt(3)));
+		}
+		return items;
+	}
+	
 	public SQLiteDatabase getDb() {
 		return db;
 	}
@@ -52,6 +77,10 @@ public class DatabaseHelper {
 		if (sdState.equals(android.os.Environment.MEDIA_MOUNTED)) {
 			File dir = new File(PATH);
 			if (!dir.exists()) {
+				File dir2 = new File("sdcard/Ancached/");
+				if(!dir2.exists()){
+					dir2.mkdir();
+				}
 				dir.mkdir();
 			}
 		}
@@ -82,5 +111,10 @@ public class DatabaseHelper {
 				}
 			}
 		}
+	}
+
+	public void closeDb() {
+		// TODO Auto-generated method stub
+		this.db.close();
 	}
 }
