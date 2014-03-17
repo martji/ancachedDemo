@@ -107,7 +107,8 @@ public class HttpResponse {
      * 
      * @return
      */
-    private Map<String, Object> getResponseHeaders() {
+    @SuppressWarnings("unused")
+	private Map<String, Object> getResponseHeaders() {
         return responseHeaders;
     }
 
@@ -279,7 +280,8 @@ public class HttpResponse {
      * 
      * @param field
      */
-    private Object getResponseHeader(String field) {
+    @SuppressWarnings("unused")
+	private Object getResponseHeader(String field) {
         return responseHeaders == null ? null : responseHeaders.get(field);
     }
 }

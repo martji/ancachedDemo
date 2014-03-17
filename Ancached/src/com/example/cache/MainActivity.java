@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
-import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -14,7 +13,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.example.ancached.R;
-import com.example.root.*;
 
 public class MainActivity extends Activity {
 

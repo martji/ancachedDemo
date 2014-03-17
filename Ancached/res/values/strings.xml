@@ -6,10 +6,14 @@
     <string name="hello_world">Hello world!</string>
     <string name="hello">Hello</string>
     <string name="select">SelectTable</string>
-    <string name="creat">CreatTable</string>
+    <string name="creat">CreatTb</string>
     <string name="insert">InsertTable</string>
     <string name="update">UpdateTable</string>
     <string name="webview">Webview</string>
     <string name="go">Go</string>
+    <string name="location">GetLOC</string>
+    <string name="info">Location</string>
+    <string name="poi">GetPOI</string>
     <string name="button_name">Submit</string>
+
 </resources>

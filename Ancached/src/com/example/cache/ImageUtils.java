@@ -83,7 +83,8 @@ public class ImageUtils {
      * @param b
      * @return
      */
-    public static Drawable bitmapToDrawable(Bitmap b) {
+    @SuppressWarnings("deprecation")
+	public static Drawable bitmapToDrawable(Bitmap b) {
         return b == null ? null : new BitmapDrawable(b);
     }
 

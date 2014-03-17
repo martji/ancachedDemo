@@ -10,7 +10,6 @@ import com.example.ancached.R;
 
 import android.app.Activity;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,9 +23,6 @@ public class HttpCache extends Activity {
 	private Button httpGet;
 	private TextView httpCacheInfo;
 	private TextView httpCacheContent;
-	private DbHelper dbHelper;
-	private SQLiteDatabase wDb;
-	private SQLiteDatabase rDb;
 	private int type = -1;
 	private HttpCacheDao httpCacheDao;
 
@@ -37,9 +33,7 @@ public class HttpCache extends Activity {
 		cache = new ConcurrentHashMap<String, HttpResponse>();// ½â¾öËÀËø
 		httpCacheDao=new HttpCacheDaoImpl(SqliteUtils.getInstance(context));
 		
-		dbHelper = new DbHelper(context);
-		//wDb = dbHelper.getWritableDatabase();
-		//rDb = dbHelper.getReadableDatabase();
+		new DbHelper(context);
 
 		httpUrl = (EditText) findViewById(R.id.http_cache_url);
 		httpGet = (Button) findViewById(R.id.http_cache_get);
@@ -60,6 +54,7 @@ public class HttpCache extends Activity {
 						httpCacheContent.setText("waiting......");
 					}
 
+					@SuppressWarnings("deprecation")
 					protected void onPostGet(HttpResponse httpResponse,
 							boolean isInCache) {
 						if (httpResponse != null) {

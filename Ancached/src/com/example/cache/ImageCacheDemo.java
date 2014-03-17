@@ -32,6 +32,7 @@ public class ImageCacheDemo extends Activity {
 			.toString();// ÎÄ¼þ¼ÐÂ·¾¶
 	private RelativeLayout parentLayout;
 
+	@SuppressWarnings("deprecation")
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_imagecache);
