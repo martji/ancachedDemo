@@ -1,9 +1,10 @@
 package com.example.ancached;
 
 import java.util.List;
+
+import com.ancached.db.DatabaseHelper;
 import com.ancached.db.MyDBHelper;
 import com.ancached.db.TrackLogItem;
-import com.ancached.model.DatabaseHelper;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import android.os.Bundle;

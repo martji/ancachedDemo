@@ -1,4 +1,4 @@
-package com.ancached.model;
+package com.ancached.db;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Vector;
 
-import com.ancached.db.TrackLogItem;
 import com.example.ancached.R;
 import android.content.Context;
 import android.database.Cursor;

@@ -86,6 +86,7 @@ public class WebViewActivity extends Activity{
 			            	String page_loc = getLocation();
 			            	TrackLogItem item = new TrackLogItem(page_url, page_title, 
 			            			page_vt, page_netState, page_loc);
+			            	item = CacheManager.checkItem(item);
 			            	dbHelper.insertTable(item);
 			            	
 			            	//prefetch thread

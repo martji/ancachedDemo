@@ -25,4 +25,10 @@ public class CacheManager {
 		return "";
 	}
 
+	//对item进行检查，无效的信息进行去除
+	public static TrackLogItem checkItem(TrackLogItem item) {
+		// TODO Auto-generated method stub
+		return item;
+	}
+
 }

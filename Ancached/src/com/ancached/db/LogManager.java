@@ -1,6 +1,5 @@
 package com.ancached.db;
 
-import com.ancached.model.DatabaseHelper;
 
 public class LogManager {
 
