@@ -1,2 +1,8 @@
 Huang Huan
 2014/3/13
+
+martji
+2014/3/17
+fix project
+1.添加新的ignore规则
+2.删除多余的文件
