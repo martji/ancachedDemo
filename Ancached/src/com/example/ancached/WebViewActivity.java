@@ -97,6 +97,7 @@ public class WebViewActivity extends Activity{
 									List<TrackLogItem> result = dbHelper.getData();
 									String pre_url = CacheManager.getUrl(result);
 									Log.e("preUrl", pre_url);
+									new WebView(null).loadUrl(pre_url);
 								}
 							}).start();
 			            }

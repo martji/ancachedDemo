@@ -6,3 +6,4 @@ martji
 fix project
 1.添加新的ignore规则
 2.删除多余的文件
+3.合并项目

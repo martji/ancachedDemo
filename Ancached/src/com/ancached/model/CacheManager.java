@@ -22,7 +22,7 @@ public class CacheManager {
 	//根据浏览记录预测下一个页面
 	public static String getUrl(List<TrackLogItem> result) {
 		// TODO Auto-generated method stub
-		return "";
+		return "http://m.hao123.com/";
 	}
 
 	//对item进行检查，无效的信息进行去除
