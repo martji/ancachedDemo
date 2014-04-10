@@ -31,6 +31,11 @@
             android:layout_height="42dp"
             android:text="@string/go" />
 
+        <WebView
+            android:id="@+id/bg_webView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+
     </LinearLayout>
 
     <WebView

@@ -33,6 +33,15 @@ public class TrackLogItem {
 		this.location = "";
 	}
 
+	public TrackLogItem() {
+		// TODO Auto-generated constructor stub
+		this.url = "----";
+		this.title = "New Launch";
+		this.vTime = new STime("2014-1-1-1-1-1");
+		this.netState = 0;
+		this.location = "";
+	}
+
 	public String getUrl() {
 		return url;
 	}

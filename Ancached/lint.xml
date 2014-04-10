@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
+    <issue id="HandlerLeak" severity="ignore" />
+    <issue id="InefficientWeight" severity="ignore" />
     <issue id="ObsoleteLayoutParam">
         <ignore path="res/layout/activity_httpcache.xml" />
     </issue>

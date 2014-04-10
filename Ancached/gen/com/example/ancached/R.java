@@ -33,8 +33,9 @@ public final class R {
     }
     public static final class id {
         public static final int LinearLayout1=0x7f090005;
-        public static final int action_settings=0x7f090010;
+        public static final int action_settings=0x7f090011;
         public static final int address=0x7f09000d;
+        public static final int bg_webView=0x7f09000f;
         public static final int btnGo=0x7f09000e;
         public static final int btn_creat=0x7f090007;
         public static final int btn_loc=0x7f090009;
@@ -48,7 +49,7 @@ public final class R {
         public static final int listView1=0x7f09000c;
         public static final int scroll=0x7f09000a;
         public static final int textview=0x7f09000b;
-        public static final int webView=0x7f09000f;
+        public static final int webView=0x7f090010;
     }
     public static final class layout {
         public static final int activity_httpcache=0x7f030000;
@@ -77,6 +78,7 @@ public final class R {
         public static final int insert=0x7f050009;
         public static final int location=0x7f05000d;
         public static final int poi=0x7f05000f;
+        public static final int refresh=0x7f050011;
         public static final int select=0x7f050007;
         public static final int test_sina=0x7f050001;
         public static final int update=0x7f05000a;

@@ -2,12 +2,11 @@ package com.example.ancached;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.ancached.db.MyDBHelper;
 import com.ancached.db.TrackLogItem;
 import com.ancached.model.CacheManager;
+import com.ancached.model.Tokenizer;
 import com.baidu.location.BDLocation;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -15,6 +14,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo.State;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -33,11 +34,16 @@ public class WebViewActivity extends Activity{
 	
 	private EditText address;
 	private Button go;
-	private WebView webView;
+	private WebView webView, bg_webView;
 	
 	public static BDLocation location = null;
 	
 	private List<TrackLogItem> hitPages = null;
+	
+	private Handler mHandler;
+	private static final int PRE_SUCCESS = 0;  
+    private static final int PRE_FAILURE = 1;
+    private static boolean TOKENIZER_STATE = false;
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	protected void onCreate(Bundle savedInstanceState){
@@ -51,17 +57,45 @@ public class WebViewActivity extends Activity{
 		address = (EditText)findViewById(R.id.address);
 		go = (Button)findViewById(R.id.btnGo);
 		webView = (WebView)findViewById(R.id.webView);
+		bg_webView = (WebView)findViewById(R.id.bg_webView);
 		WebSettings settings = webView.getSettings();
 		settings.setJavaScriptEnabled(true);
 		settings.setBuiltInZoomControls(true);
+		settings.setAppCacheEnabled(true);
+		settings.setAllowFileAccess(true);
+		settings.setDomStorageEnabled(true);
+		settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+		
+		settings = bg_webView.getSettings();
 		settings.setAppCacheEnabled(true);
 		settings.setAllowFileAccess(true);
 		settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
 //        webView.clearCache(false);
 		
-		hitPages = new ArrayList<TrackLogItem>();
+		new Thread(new Runnable() {	
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				Tokenizer.init();
+				TOKENIZER_STATE = true;
+			}
+		}).start();
 		
+		mHandler = new Handler() {  
+	        public void handleMessage (Message msg) {//此方法在ui线程运行  
+	            switch(msg.what) {  
+	            case PRE_SUCCESS:
+	                bg_webView.loadUrl((String) msg.obj);
+	                break;
+	            case PRE_FAILURE:
+	                break;  
+	            }  
+	        }  
+	    }; 
+	    hitPages = new ArrayList<TrackLogItem>();
+	    hitPages.add(new TrackLogItem());
+	    dbHelper.insertTable(new TrackLogItem());
         address.setText("http://m.hao123.com/");
 		go.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
@@ -83,6 +117,7 @@ public class WebViewActivity extends Activity{
 			                Toast.makeText(WebViewActivity.this, 
 			                		"Oh no! " + description, Toast.LENGTH_SHORT).show();
 			            }
+			            
 			            public void onPageFinished (WebView view, String url){
 			            	String page_url = view.getUrl();
 			            	String page_title = view.getTitle();
@@ -91,21 +126,30 @@ public class WebViewActivity extends Activity{
 			            	String page_loc = getLocation();
 			            	TrackLogItem item = new TrackLogItem(page_url, page_title, 
 			            			page_vt, page_netState, page_loc);
-			            	item = CacheManager.checkItem(item);
-			            	hitPages.add(item);
-			            	dbHelper.insertTable(item);
-			            	
-			            	//prefetch thread
-			            	new Thread(new Runnable() {
-								@Override
-								public void run() {
-									// TODO Auto-generated method stub
-									List<TrackLogItem> result = dbHelper.getData();
-									String pre_url = CacheManager.getUrl(hitPages, result);
-									Log.e("preUrl", pre_url);
-									new WebView(null).loadUrl(pre_url);
-								}
-							}).start();
+			            	if (CacheManager.checkItem(TOKENIZER_STATE, hitPages, item) != null){
+			            		hitPages.add(item);
+			            		dbHelper.insertTable(item);	
+		            	
+				            	//prefetch thread
+				            	new Thread(new Runnable() {
+									@SuppressWarnings("unused")
+									@Override
+									public void run() {
+										// TODO Auto-generated method stub
+//										List<TrackLogItem> result = dbHelper.getData();
+//										String pre_url = CacheManager.getUrl(hitPages, result);
+										String pre_url = "sina.cn";
+										Log.e("preUrl", pre_url);
+										if (pre_url == null){
+											mHandler.obtainMessage(PRE_FAILURE).sendToTarget();
+											return;
+										}
+										else {
+											mHandler.obtainMessage(PRE_SUCCESS,pre_url).sendToTarget();
+										}
+									}
+								}).start();
+			            	}
 			            }
 			        });  
 			}
@@ -120,6 +164,7 @@ public class WebViewActivity extends Activity{
         }  
         return super.onKeyDown(keyCode, event);
     }
+	
 	
 	public int getNetState(){
 		ConnectivityManager conMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

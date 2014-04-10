@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<types>
+    <type id="news">
+        <keyword name="马航">
+            <weight>90</weight>
+        </keyword> 
+    </type>
+</types>

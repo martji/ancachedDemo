@@ -15,5 +15,6 @@
     <string name="info">Location</string>
     <string name="poi">GetPOI</string>
     <string name="button_name">Submit</string>
+    <string name="refresh">GO</string>
 
 </resources>
