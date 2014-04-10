@@ -145,8 +145,8 @@ public class WebViewActivity extends Activity{
 						@Override
 						public void run() {
 							// TODO Auto-generated method stub
-							String pre_url = CacheManager.getTopic(hitPages);
-							Log.i("pre_url", pre_url);
+							String next_topic = CacheManager.getTopic(hitPages);
+							Log.i("next_topic", next_topic);
 						}
 					}).start();
 	            	//判断是否为首页，如果是则需保存映射
@@ -201,14 +201,20 @@ public class WebViewActivity extends Activity{
 		String stime = "";
 		Time t=new Time();
 		t.setToNow();
+		String[] date = new String[5];
 		String year = Integer.toString(t.year);
-		String month = Integer.toString(t.month+1);
-		String date = Integer.toString(t.monthDay);
-		String hour = Integer.toString(t.hour);
-		String minute = Integer.toString(t.minute);
-		String second = Integer.toString(t.second);
-		stime += year + "-" + month + "-" + date + "-" +
-				hour + "-" + minute + "-" + second;
+		date[0] = Integer.toString(t.month+1);
+		date[1] = Integer.toString(t.monthDay);
+		date[2] = Integer.toString(t.hour);
+		date[3] = Integer.toString(t.minute);
+		date[4] = Integer.toString(t.second);
+		for (int i = 0; i < 5; i++){
+			if (date[i].length() == 1){
+				date[i] = "0" + date[i];
+			}
+		}
+		stime += year + "-" + date[0] + "-" + date[1] + " " +
+				date[2] + ":" + date[3] + ":" + date[4];
 		return stime;
 	}
 	

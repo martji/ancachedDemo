@@ -12,13 +12,15 @@ public class STime {
 	
 	public STime(String stime){
 		this.setStr(stime);
-		String[] tmp = stime.split("-");
+		String[] tmps = stime.split(" ");
+		String[] tmp = tmps[0].split("-");
 		this.year = Integer.parseInt(tmp[0]);
 		this.month = Integer.parseInt(tmp[1]);
 		this.day = Integer.parseInt(tmp[2]);
-		this.hour = Integer.parseInt(tmp[3]);
-		this.minute = Integer.parseInt(tmp[4]);
-		this.second = Integer.parseInt(tmp[5]);
+		tmp = tmps[1].split(":");
+		this.hour = Integer.parseInt(tmp[0]);
+		this.minute = Integer.parseInt(tmp[1]);
+		this.second = Integer.parseInt(tmp[2]);
 	}
 	
 	public int getYear() {

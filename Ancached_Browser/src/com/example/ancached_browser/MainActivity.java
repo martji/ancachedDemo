@@ -5,6 +5,7 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.example.anacched_browser.R;
+import com.example.model.CacheManager;
 import com.example.model.MyDBHelper;
 import com.example.service.MyService;
 import android.os.Bundle;
@@ -98,7 +99,7 @@ public class MainActivity extends Activity {
 				dbHelper.onCreate(db);
 //				List<TrackLogItem> result = dbHelper.getData();
 //				CacheManager.trainModel(result);
-//				CacheManager.getModel();
+				CacheManager.getModel();
 				state = true;
 			}
 		}).start();

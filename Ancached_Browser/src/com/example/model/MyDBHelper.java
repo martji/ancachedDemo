@@ -61,6 +61,25 @@ public class MyDBHelper extends SQLiteOpenHelper{
         return dataList;  
     } 
     
+    public List<TrackLogItem> getData(int size) {  
+        String mainDataSQL = "select * from " + MAIN_DATA_TABLE_NAME + " order by vtime desc limit " + Integer.toString(size); 
+        File name = new File(SQL_NAME);  
+        SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(name, null);
+        Cursor cursor = db.rawQuery(mainDataSQL, null);   
+        List<TrackLogItem> dataList = new ArrayList<TrackLogItem>();  
+        if (cursor != null) {   
+            while (cursor.moveToNext()) {
+            	TrackLogItem data = new TrackLogItem(cursor.getString(0), cursor.getString(1), 
+    					cursor.getString(2), cursor.getInt(3), cursor.getString(4));
+                dataList.add(data);  
+            }  
+        }  
+        cursor.close();  
+        db.close();  
+          
+        return dataList;  
+    } 
+    
     public void insertTable(TrackLogItem item){
     	File name = new File(SQL_NAME);
     	SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(name, null);

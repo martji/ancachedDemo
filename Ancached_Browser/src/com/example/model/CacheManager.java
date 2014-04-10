@@ -27,14 +27,15 @@ public class CacheManager {
 	private static String WANGYI = "3g.163.com/touch";
 	private static String SOHU = "m.sohu.com";
 	private final static HashMap<String, String> DOMAIN_MAP = new HashMap<String, String>();
+	private final static List<String> DOMAIN_TOPIC = new ArrayList<String>();
 	static {
-		DOMAIN_MAP.put("新闻", "news");
-		DOMAIN_MAP.put("体育", "sports");
-		DOMAIN_MAP.put("财经", "finance");
-		DOMAIN_MAP.put("科技", "tech");
-		DOMAIN_MAP.put("娱乐", "ent");
-		DOMAIN_MAP.put("军事", "mil");
+		DOMAIN_MAP.put("新闻", "news");DOMAIN_MAP.put("体育", "sports");
+		DOMAIN_MAP.put("财经", "finance");DOMAIN_MAP.put("科技", "tech");
+		DOMAIN_MAP.put("娱乐", "ent");DOMAIN_MAP.put("军事", "mil");
 		DOMAIN_MAP.put("汽车", "auto");
+		DOMAIN_TOPIC.add("news");DOMAIN_TOPIC.add("sports");DOMAIN_TOPIC.add("finance");
+		DOMAIN_TOPIC.add("tech");DOMAIN_TOPIC.add("ent");DOMAIN_TOPIC.add("mil");
+		DOMAIN_TOPIC.add("auto");DOMAIN_TOPIC.add("others");
 	}
 	private static final String MODEL_PATH = "sdcard/Ancached_Browser/data/model.dat";
 	private static HashMap<String, Integer> model_sites = new HashMap<String, Integer>();
@@ -67,8 +68,21 @@ public class CacheManager {
 	
 	public static String getTopic(List<TrackLogItem> hitPages) {
 		// TODO Auto-generated method stub
-		String topic = "news";
-		return topic;
+		TrackLogItem item = hitPages.get(hitPages.size()-1);
+		String url = item.getUrl();
+		String title = item.getTitle();
+		url = parseUrl(url, title);
+		int urlNum = urlTransform(url);
+		int site = urlNum / 9;
+		int topic = urlNum % 9;
+		int index = 0;
+		for (int i = topic*8+1, j = 0; j < 8; j++){
+			if (model[site][i+j] > model[site][i+index]){
+				index = j;
+			}
+		}
+		String nextTopic = DOMAIN_TOPIC.get(index);
+		return nextTopic;
 	}
 	public static String getUrl(List<PageItem> items) {
 		// TODO Auto-generated method stub
@@ -209,7 +223,6 @@ public class CacheManager {
 	
 	public static double[][] getModel() {
 		// TODO Auto-generated method stub
-		double model[][] = new double[MODEL_ROWS][MODEL_COLUMNS];
 		String sdState = android.os.Environment.getExternalStorageState();
 		if (sdState.equals(android.os.Environment.MEDIA_MOUNTED)) {
 			File modelFile = new File(MODEL_PATH);
@@ -316,17 +329,17 @@ public class CacheManager {
 		return mid_model;
 	}
 	private static double[][] modelRecovery(String mid_model){
-		double[][] model = new double[MODEL_ROWS][MODEL_COLUMNS];
+		double[][] n_model = new double[MODEL_ROWS][MODEL_COLUMNS];
 		String[] rows = mid_model.split("\n");
 		for (int i = 0, s = 0, t = 0; i < rows.length; i++){
-			if (rows[i] == "" || rows[i].length() == 0){
+			if (rows[i] == null || rows[i].length() == 0){
 				s++;
 				t = 0;
 			}
 			else {
 				String[] columns = rows[i].split("\t");
 				for (int j = 0; j < columns.length; j++){
-					model[s][t++] = Double.parseDouble(columns[j]);
+					n_model[s][t++] = Double.parseDouble(columns[j]);
 				}
 			}			
 		}
