@@ -1,5 +1,6 @@
 package com.example.ancached;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.ancached.db.MyDBHelper;
@@ -36,6 +37,8 @@ public class WebViewActivity extends Activity{
 	
 	public static BDLocation location = null;
 	
+	private List<TrackLogItem> hitPages = null;
+	
 	@SuppressLint("SetJavaScriptEnabled")
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -56,6 +59,8 @@ public class WebViewActivity extends Activity{
 		settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
 //        webView.clearCache(false);
+		
+		hitPages = new ArrayList<TrackLogItem>();
 		
         address.setText("http://m.hao123.com/");
 		go.setOnClickListener(new OnClickListener() {
@@ -87,6 +92,7 @@ public class WebViewActivity extends Activity{
 			            	TrackLogItem item = new TrackLogItem(page_url, page_title, 
 			            			page_vt, page_netState, page_loc);
 			            	item = CacheManager.checkItem(item);
+			            	hitPages.add(item);
 			            	dbHelper.insertTable(item);
 			            	
 			            	//prefetch thread
@@ -95,7 +101,7 @@ public class WebViewActivity extends Activity{
 								public void run() {
 									// TODO Auto-generated method stub
 									List<TrackLogItem> result = dbHelper.getData();
-									String pre_url = CacheManager.getUrl(result);
+									String pre_url = CacheManager.getUrl(hitPages, result);
 									Log.e("preUrl", pre_url);
 									new WebView(null).loadUrl(pre_url);
 								}
