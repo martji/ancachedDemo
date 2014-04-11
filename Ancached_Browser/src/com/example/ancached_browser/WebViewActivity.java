@@ -82,7 +82,8 @@ public class WebViewActivity extends Activity{
 				// TODO Auto-generated method stub
 				Log.i("url", url);
 				address.setText(url);
-				if (CacheHelper.checkUrl(url)){
+				String n_url = CacheHelper.getUrl(url);
+				if (CacheHelper.checkUrl(n_url)){
 					//load data from cache
 				}
 				else {
@@ -101,6 +102,7 @@ public class WebViewActivity extends Activity{
 			public void onPageStarted (WebView view, String url, Bitmap favicon){
 				super.onPageStarted(view, url, favicon);	
 //				//开始加载页面的时候记录
+//				url = CacheHelper.getUrl(url);
 //				String page_title = CacheManager.getTitle(url);
 //				String page_vt = getTime();
 //            	int page_netState = getNetState();

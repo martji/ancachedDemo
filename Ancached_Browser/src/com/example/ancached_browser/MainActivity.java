@@ -70,6 +70,7 @@ public class MainActivity extends Activity {
 				// TODO Auto-generated method stub
 				Date curDate = new Date(System.currentTimeMillis());
 //				WebServiceManager.getTokens2("科比大战詹姆斯");
+//				Tokenizer.getKeys("科比大战詹姆斯");
 				Date endDate = new Date(System.currentTimeMillis());
 				long diff = endDate.getTime() - curDate.getTime();
 				Log.e("webservice_result", Long.toString(diff));

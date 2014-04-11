@@ -11,7 +11,7 @@ public class CacheHelper {
 	/**
 	 * @return : ≈–∂œurl «∑Ò“—±ªª∫¥Ê
 	 */
-	public static boolean checkUrl(String url) {
+	public static String getUrl(String url) {
 		// TODO Auto-generated method stub
 		if (url.contains("sina") && url.contains("&clicktime")){
 			url = url.substring(0, url.indexOf("&clicktime"));
@@ -20,6 +20,13 @@ public class CacheHelper {
 			url = url.replaceAll("sid=[^&]*&*", "");
 		}
 		Log.i("url", url);
+		return url;
+	}
+	public static boolean checkUrl(String url) {
+		// TODO Auto-generated method stub
+		if (cachedList.contains(url)){
+			return true;
+		}
 		return false;
 	}
 
