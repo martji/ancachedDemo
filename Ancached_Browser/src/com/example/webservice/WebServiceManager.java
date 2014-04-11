@@ -1,4 +1,4 @@
-package com.test.webservice;
+package com.example.webservice;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,7 +11,7 @@ import org.ksoap2.transport.HttpTransportSE;
 import android.util.Log;
 
 import com.example.ancached_browser.MainActivity;
-import com.example.model.TrackLogItem;
+import com.example.struct.TrackLogItem;
 
 public class WebServiceManager {
 	

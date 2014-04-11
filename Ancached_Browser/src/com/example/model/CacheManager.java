@@ -13,6 +13,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.util.EncodingUtils;
+
+import com.example.struct.Featuer;
+import com.example.struct.PageItem;
+import com.example.struct.TrackLogItem;
+
 import android.util.Log;
 
 public class CacheManager {
@@ -70,8 +75,6 @@ public class CacheManager {
 		// TODO Auto-generated method stub
 		TrackLogItem item = hitPages.get(hitPages.size()-1);
 		String url = item.getUrl();
-		String title = item.getTitle();
-		url = parseUrl(url, title);
 		int urlNum = urlTransform(url);
 		int site = urlNum / 9;
 		int topic = urlNum % 9;
@@ -363,6 +366,7 @@ public class CacheManager {
 		}
 		else if (url.contains(IFENG)){
 			index = 19;
+			Log.i("debug", url);
 			String type = url.substring(index).split("/")[0];
 			if (type != ""){
 				n_url = IFENG + "-" + type;

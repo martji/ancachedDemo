@@ -1,4 +1,4 @@
-package com.test.webservice;
+package com.example.webservice;
 
 public class WsdlCfg {
 	

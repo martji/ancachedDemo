@@ -3,6 +3,9 @@ package com.example.model;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.struct.TrackLogItem;
+
 import android.content.Context;   
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;  

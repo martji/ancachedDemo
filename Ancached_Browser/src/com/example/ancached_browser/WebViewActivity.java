@@ -3,9 +3,10 @@ package com.example.ancached_browser;
 import java.util.ArrayList;
 import java.util.List;
 import com.example.anacched_browser.R;
+import com.example.model.CacheHelper;
 import com.example.model.CacheManager;
 import com.example.model.MyDBHelper;
-import com.example.model.TrackLogItem;
+import com.example.struct.TrackLogItem;
 import android.app.Activity;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -81,7 +82,12 @@ public class WebViewActivity extends Activity{
 				// TODO Auto-generated method stub
 				Log.i("url", url);
 				address.setText(url);
-				view.loadUrl(url);
+				if (CacheHelper.checkUrl(url)){
+					//load data from cache
+				}
+				else {
+					view.loadUrl(url);
+				}
 				return true;
 			}
 

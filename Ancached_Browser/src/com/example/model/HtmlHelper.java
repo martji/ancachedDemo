@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.example.struct.PageItem;
+
 import android.util.Log;
 
 public class HtmlHelper {
@@ -69,7 +72,7 @@ public class HtmlHelper {
 	        			pItem.setType(type);
 	        			CacheManager.urlMap.put(url, pItem);
         				CacheManager.insertTopicMap(type, pItem);
-	        			Log.e("list", title);
+	        			Log.e("list", url + "\n" +title);
 	        		}
         		}
         		else if (site.equals(SINA)){
@@ -87,7 +90,7 @@ public class HtmlHelper {
 		        		pItem.setType(type);
 		        		CacheManager.urlMap.put(url, pItem);
         				CacheManager.insertTopicMap(type, pItem);
-		        		Log.e("list", title);
+		        		Log.e("list", url + "\n" +title);
         			}
 	        		
         		}
@@ -124,11 +127,12 @@ public class HtmlHelper {
 	        		}
 	        		if (TOPIC.contains(type)){
 	        			url = url.replace("&amp;", "&");
+	        			url = url.replaceAll("sid=[^&]*&*", "");
 		        		PageItem pItem = new PageItem(url, title);
 		        		pItem.setType(type);
 		        		CacheManager.urlMap.put(url, pItem);
         				CacheManager.insertTopicMap(type, pItem);
-		        		Log.e("list", title);
+		        		Log.e("list", url + "\n" +title);
 	        		}
         		}
         	}
@@ -174,7 +178,7 @@ public class HtmlHelper {
 	        				item.setType(type);
 	        				CacheManager.urlMap.put(item.getUrl(), item);
 	        				CacheManager.insertTopicMap(type, item);
-	        				Log.e("list", item.getTitle());
+	        				Log.e("list", item.getUrl() + "\n" + item.getTitle());
 	        			}
         			}
         			pageItems = new ArrayList<PageItem>();
@@ -244,7 +248,7 @@ public class HtmlHelper {
         					item.setType(type);
         					CacheManager.urlMap.put(item.getUrl(), item);
 	        				CacheManager.insertTopicMap(type, item);
-        					Log.e("list", item.getTitle());
+        					Log.e("list", item.getUrl() + "\n" + item.getTitle());
         				}
         			}
         			pageItems = new ArrayList<PageItem>();

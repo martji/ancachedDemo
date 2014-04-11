@@ -1,4 +1,5 @@
-package com.example.model;
+package com.example.struct;
+
 
 import android.text.format.Time;
 

@@ -2,8 +2,9 @@ package com.example.service;
 
 import java.util.List;
 import com.example.ancached_browser.WebViewActivity;
-import com.example.model.TrackLogItem;
-import com.test.webservice.WebServiceManager;
+import com.example.struct.TrackLogItem;
+import com.example.webservice.WebServiceManager;
+
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
