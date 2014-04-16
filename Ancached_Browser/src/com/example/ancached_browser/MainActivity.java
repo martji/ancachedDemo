@@ -101,6 +101,8 @@ public class MainActivity extends Activity {
 //				List<TrackLogItem> result = dbHelper.getData();
 //				CacheManager.trainModel(result);
 				CacheManager.getModel();
+				String nextUrl = CacheManager.getUrl();
+				Log.i("nextUrl", nextUrl);
 				state = true;
 			}
 		}).start();

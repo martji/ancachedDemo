@@ -107,7 +107,7 @@ public class WebServiceManager {
         Map<String, String> args = new HashMap<String, String>();
 		String nameSpace = "http://model.magq.com";  
         String methodName = "addItem";  
-        String endPoint = "http://192.168.3.201:8080/axis2/services/DBHelper";  
+        String endPoint = "http://112.124.46.148:8080/axis2/services/DBHelper";  
         String soapAction = "http://model.magq.com/addItem"; 
         
         cfg.setNameSpace(nameSpace);

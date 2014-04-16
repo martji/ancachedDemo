@@ -74,7 +74,7 @@ public class WebViewActivity extends Activity{
 	    
 		String url = "http://m.hao123.com";
 		address.setText("Hao123");
-		webView.loadUrl(url);
+		webView.loadUrl(url);//此处可修改成加载静态页面
 		webView.setWebViewClient(new WebViewClient() {
 
 			@Override
@@ -99,6 +99,7 @@ public class WebViewActivity extends Activity{
 				Toast.makeText(WebViewActivity.this, "Oh no! " + description,
 						Toast.LENGTH_SHORT).show();
 			}
+			
 			public void onPageStarted (WebView view, String url, Bitmap favicon){
 				super.onPageStarted(view, url, favicon);	
 //				//开始加载页面的时候记录
@@ -113,7 +114,7 @@ public class WebViewActivity extends Activity{
 //				//item检查、记录、包括预处理、title的处理
 //				item = CacheManager.checkItem(hitPages, item);
 //            	if (item != null){
-//	            	//hitPages.add(item);
+//	            	hitPages.add(item);
 //	            	//dbHelper.insertTable(item);
 //	            	
 //	            	//title处理
@@ -123,10 +124,8 @@ public class WebViewActivity extends Activity{
 //						@Override					
 //						public void run() {
 //							// TODO Auto-generated method stub
-//							String topic = CacheManager.getTopic(hitPages);
-//							List<PageItem> items = CacheManager.topicMap.get(topic);
 //							//预测下一个链接
-//							String nextUrl = CacheManager.getUrl(items);
+//							String nextUrl = CacheManager.getUrl(hitPages);
 //							Log.i("nextUrl", nextUrl);
 //							
 //							//缓存网页内容
@@ -153,8 +152,8 @@ public class WebViewActivity extends Activity{
 						@Override
 						public void run() {
 							// TODO Auto-generated method stub
-							String next_topic = CacheManager.getTopic(hitPages);
-							Log.i("next_topic", next_topic);
+							String nextUrl = CacheManager.getUrl(hitPages);
+							Log.i("nextUrl", nextUrl);
 						}
 					}).start();
 	            	//判断是否为首页，如果是则需保存映射
@@ -163,11 +162,17 @@ public class WebViewActivity extends Activity{
 	            		view.loadUrl("javascript:window.handler.show(document.getElementsByTagName('html')[0].innerHTML);");
 	            	}
             	}
+            	
+//            	siteUrl = CacheManager.checkUrl(url, view.getTitle());
+//            	if (siteUrl != null){
+//            		view.loadUrl("javascript:window.handler.show(document.getElementsByTagName('html')[0].innerHTML);");
+//            	}
             }
 		});
+		
 		webView.setWebChromeClient(new WebChromeClient() {
 			@SuppressWarnings("static-access")
-			public void onProgressChanged(WebView view, int newProgress) {  
+			public void onProgressChanged(WebView view, int newProgress) {
 				if (newProgress == 100) {
 					progressBar.setVisibility(view.GONE);
 				} else {

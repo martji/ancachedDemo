@@ -13,11 +13,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.util.EncodingUtils;
-
 import com.example.struct.Featuer;
 import com.example.struct.PageItem;
 import com.example.struct.TrackLogItem;
-
 import android.util.Log;
 
 public class CacheManager {
@@ -31,6 +29,12 @@ public class CacheManager {
 	private static String TECENT = "info.3g.qq.com";
 	private static String WANGYI = "3g.163.com/touch";
 	private static String SOHU = "m.sohu.com";
+	private static Map<String, String> SITESTITLE = new HashMap<String, String>();
+	static {
+		SITESTITLE.put(SINA, "手机新浪网");SITESTITLE.put(IFENG, "手机凤凰网");SITESTITLE.put(SOHU, "搜狐网");
+		SITESTITLE.put(TECENT, "手机腾讯网");SITESTITLE.put(WANGYI, "手机网易网");
+		SITESTITLE.put(HAO, "hao123导航-上网从这里开始");
+	}
 	private final static HashMap<String, String> DOMAIN_MAP = new HashMap<String, String>();
 	private final static List<String> DOMAIN_TOPIC = new ArrayList<String>();
 	static {
@@ -62,7 +66,7 @@ public class CacheManager {
 	private static Map<String, String> TITLES = new HashMap<String, String>();
 	static {
 		SITES.add(SINA);SITES.add(IFENG);SITES.add(TECENT);
-		SITES.add(SOHU);SITES.add(WANGYI);
+		SITES.add(SOHU);SITES.add(WANGYI);SITES.add(HAO);
 		TITLES.put("手机新浪网", SINA);TITLES.put("手机凤凰网", IFENG);TITLES.put("搜狐网", SOHU);
 		TITLES.put("手机腾讯网", TECENT);TITLES.put("手机网易网", WANGYI);
 	}
@@ -70,11 +74,13 @@ public class CacheManager {
 	public static Map<String, PageItem> urlMap = new HashMap<String, PageItem>();
 	public static Map<String, List<PageItem>> topicMap = new HashMap<String, List<PageItem>>();
 	
-	
-	public static String getTopic(List<TrackLogItem> hitPages) {
+	/**
+	 * 
+	 * @param url 当前点击的链接
+	 * @return 下一次可能访问的主题
+	 */
+	public static String getTopic(String url) {
 		// TODO Auto-generated method stub
-		TrackLogItem item = hitPages.get(hitPages.size()-1);
-		String url = item.getUrl();
 		int urlNum = urlTransform(url);
 		int site = urlNum / 9;
 		int topic = urlNum % 9;
@@ -87,7 +93,43 @@ public class CacheManager {
 		String nextTopic = DOMAIN_TOPIC.get(index);
 		return nextTopic;
 	}
-	public static String getUrl(List<PageItem> items) {
+	
+	/**
+	 * 
+	 * @return 初始化时调用，返回启动会可能最先访问的网站？第二可能
+	 */
+	public static String getUrl(){
+		int tmp = 0;
+		for (int i = 0; i < MODEL_ROWS; i++){
+			if (model[i][0] > model[tmp][0]){
+				tmp = i;
+			}
+		}
+		return SITES.get(tmp);
+	}
+	
+	public static String getUrl(List<TrackLogItem> hitPages) {
+		// TODO Auto-generated method stub
+		TrackLogItem item = hitPages.get(hitPages.size()-1);
+		String url = item.getUrl();
+		if (url.equals(HAO)){
+			return "";
+		}
+		else {
+			String topic = CacheManager.getTopic(url);
+			Log.i("nextUrl_topic", topic);
+			List<PageItem> items = CacheManager.topicMap.get(topic);
+			return getUrlInner(url, items);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param url 本次点击的链接
+	 * @param items 链接集合
+	 * @return 接下来可能访问的链接
+	 */
+	public static String getUrlInner(String url, List<PageItem> items) {
 		// TODO Auto-generated method stub
 		String nextUrl = HAO;
 		return nextUrl;
@@ -444,6 +486,13 @@ public class CacheManager {
 		// TODO Auto-generated method stub
 		if (urlMap.containsKey(url)){
 			return urlMap.get(url).getTitle();
+		}
+		else {
+			for (int i = 0; i < SITES.size(); i++){
+				if (url.indexOf(SITES.get(i)) == 7){
+					return SITESTITLE.get(SITES.get(i));
+				}
+			}
 		}
 		return "";
 	}
