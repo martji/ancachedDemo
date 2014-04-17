@@ -12,7 +12,15 @@ import android.util.Log;
 
 public class HtmlHelper {
 
-	private final static HashMap<String, String> DOMAIN_MAP = new HashMap<String, String>();
+	private final static HashMap<String, String> DOMAIN_MAP = new HashMap<String, String>();	
+	private static List<String> TOPIC = new ArrayList<String>();
+	
+	private static String SOHU = "m.sohu.com";
+	private static String YI163 = "3g.163.com/touch";
+	private static String SINA = "sina.cn";
+	private static String IFENG = "i.ifeng.com";
+	private static String TECENT = "info.3g.qq.com";
+	
 	static {
 		DOMAIN_MAP.put("新闻", "news");
 		DOMAIN_MAP.put("体育", "sports");
@@ -23,18 +31,10 @@ public class HtmlHelper {
 		DOMAIN_MAP.put("军事", "mil");
 		DOMAIN_MAP.put("汽车", "auto");
 		DOMAIN_MAP.put("历史", "history");
-	}
-	private static List<String> TOPIC = new ArrayList<String>();
-	static {
+		
 		TOPIC.add("news");TOPIC.add("sports");TOPIC.add("finance");TOPIC.add("tech");
 		TOPIC.add("ent");TOPIC.add("mil");TOPIC.add("auto");TOPIC.add("others");
 	}
-	private static String SOHU = "m.sohu.com";
-	private static String YI163 = "3g.163.com/touch";
-	private static String SINA = "sina.cn";
-	private static String IFENG = "i.ifeng.com";
-	private static String TECENT = "info.3g.qq.com";
-	
 	
 	public static void parse(String url, String data) {
 		// TODO Auto-generated method stub
@@ -84,7 +84,7 @@ public class HtmlHelper {
         			}
         			int tmp = url.indexOf(".sina");
         			if (tmp > 8){
-		        		String type = url.substring(8,tmp);
+		        		String type = url.substring(7,tmp);
 		        		url = url.replace("&amp;", "&");
 		        		PageItem pItem = new PageItem(url, title);
 		        		pItem.setType(type);

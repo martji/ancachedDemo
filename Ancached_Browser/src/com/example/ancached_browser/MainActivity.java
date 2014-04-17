@@ -99,6 +99,8 @@ public class MainActivity extends Activity {
 				SQLiteDatabase db = dbHelper.getDb();
 				dbHelper.onCreate(db);
 //				List<TrackLogItem> result = dbHelper.getData();
+//				//Êý¾ÝÇ¨ÒÆ
+//				WebServiceManager.insertItem(result);
 //				CacheManager.trainModel(result);
 				CacheManager.getModel();
 				String nextUrl = CacheManager.getUrl();

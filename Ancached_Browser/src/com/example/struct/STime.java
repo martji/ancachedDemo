@@ -11,16 +11,38 @@ public class STime {
 	private String str;
 	
 	public STime(String stime){
-		this.setStr(stime);
-		String[] tmps = stime.split(" ");
-		String[] tmp = tmps[0].split("-");
-		this.year = Integer.parseInt(tmp[0]);
-		this.month = Integer.parseInt(tmp[1]);
-		this.day = Integer.parseInt(tmp[2]);
-		tmp = tmps[1].split(":");
-		this.hour = Integer.parseInt(tmp[0]);
-		this.minute = Integer.parseInt(tmp[1]);
-		this.second = Integer.parseInt(tmp[2]);
+		if (stime.contains(" ")){
+			this.setStr(stime);
+			String[] tmps = stime.split(" ");
+			String[] tmp = tmps[0].split("-");
+			this.year = Integer.parseInt(tmp[0]);
+			this.month = Integer.parseInt(tmp[1]);
+			this.day = Integer.parseInt(tmp[2]);
+			tmp = tmps[1].split(":");
+			this.hour = Integer.parseInt(tmp[0]);
+			this.minute = Integer.parseInt(tmp[1]);
+			this.second = Integer.parseInt(tmp[2]);
+		}
+		else {
+			String[] date = stime.split("-");
+			for (int j = 1; j < 6; j++){
+				if (date[j].length() == 1){
+					date[j] = "0" + date[j];
+				}
+			}
+			stime = date[0] + "-" + date[1] + "-" + date[2] + " " +
+					date[3] + ":" + date[4] + ":" + date[5];
+			this.setStr(stime);
+			String[] tmps = stime.split(" ");
+			String[] tmp = tmps[0].split("-");
+			this.year = Integer.parseInt(tmp[0]);
+			this.month = Integer.parseInt(tmp[1]);
+			this.day = Integer.parseInt(tmp[2]);
+			tmp = tmps[1].split(":");
+			this.hour = Integer.parseInt(tmp[0]);
+			this.minute = Integer.parseInt(tmp[1]);
+			this.second = Integer.parseInt(tmp[2]);
+		}
 	}
 	
 	public int getYear() {

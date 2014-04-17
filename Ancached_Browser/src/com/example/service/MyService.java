@@ -45,11 +45,9 @@ public class MyService extends Service {
 					// TODO Auto-generated method stub
 					try{
 						List<TrackLogItem> items = WebViewActivity.getHitPages();
-//						new ArrayList<TrackLogItem>();
-//						for (int i = 0; i < 50; i++){
-//							items.add(new TrackLogItem());
-//						}
-						WebServiceManager.insertItem(items);
+						if (items.size() > 3){
+							WebServiceManager.insertItem(items);
+						}
 					}catch(Exception e){
 						Log.e("webservice_result", "insertError");
 					}

@@ -29,15 +29,29 @@ public class CacheManager {
 	private static String TECENT = "info.3g.qq.com";
 	private static String WANGYI = "3g.163.com/touch";
 	private static String SOHU = "m.sohu.com";
-	private static Map<String, String> SITESTITLE = new HashMap<String, String>();
+	private static List<String> SITES = new ArrayList<String>();
+	private static Map<String, String> TITLES = new HashMap<String, String>();
+	private static Map<String, String> SITESTITLE = new HashMap<String, String>();	
+	private final static HashMap<String, String> DOMAIN_MAP = new HashMap<String, String>();
+	private final static List<String> DOMAIN_TOPIC = new ArrayList<String>();
+	
+	private static final String MODEL_PATH = "sdcard/Ancached_Browser/data/model.dat";
+	private static HashMap<String, Integer> model_sites = new HashMap<String, Integer>();
+	private static HashMap<String, Integer> model_types = new HashMap<String, Integer>();
+	private static final int MODEL_ROWS = 6;
+	private static final int TYPE_SIZE = 8;
+	private static final int MODEL_COLUMNS = 73;
+	private static double[][] model = new double[MODEL_ROWS][MODEL_COLUMNS];
+		
+	public static boolean mapStatus = false;
+	public static Map<String, PageItem> urlMap = new HashMap<String, PageItem>();
+	public static Map<String, List<PageItem>> topicMap = new HashMap<String, List<PageItem>>();
+	
 	static {
 		SITESTITLE.put(SINA, "手机新浪网");SITESTITLE.put(IFENG, "手机凤凰网");SITESTITLE.put(SOHU, "搜狐网");
 		SITESTITLE.put(TECENT, "手机腾讯网");SITESTITLE.put(WANGYI, "手机网易网");
 		SITESTITLE.put(HAO, "hao123导航-上网从这里开始");
-	}
-	private final static HashMap<String, String> DOMAIN_MAP = new HashMap<String, String>();
-	private final static List<String> DOMAIN_TOPIC = new ArrayList<String>();
-	static {
+
 		DOMAIN_MAP.put("新闻", "news");DOMAIN_MAP.put("体育", "sports");
 		DOMAIN_MAP.put("财经", "finance");DOMAIN_MAP.put("科技", "tech");
 		DOMAIN_MAP.put("娱乐", "ent");DOMAIN_MAP.put("军事", "mil");
@@ -45,34 +59,20 @@ public class CacheManager {
 		DOMAIN_TOPIC.add("news");DOMAIN_TOPIC.add("sports");DOMAIN_TOPIC.add("finance");
 		DOMAIN_TOPIC.add("tech");DOMAIN_TOPIC.add("ent");DOMAIN_TOPIC.add("mil");
 		DOMAIN_TOPIC.add("auto");DOMAIN_TOPIC.add("others");
-	}
-	private static final String MODEL_PATH = "sdcard/Ancached_Browser/data/model.dat";
-	private static HashMap<String, Integer> model_sites = new HashMap<String, Integer>();
-	private static HashMap<String, Integer> model_types = new HashMap<String, Integer>();
-	static {
+
 		model_sites.put(SINA, 0);model_sites.put(IFENG, 1);
 		model_sites.put(SOHU, 2);model_sites.put(TECENT, 3);model_sites.put(WANGYI, 4);
 		model_sites.put("others", 5);model_sites.put(TECENT+"-index", 6);
 		model_types.put("index", 0);model_types.put("news", 1);model_types.put("sports", 2);
 		model_types.put("finance", 3);model_types.put("tech", 4);model_types.put("ent", 5);
 		model_types.put("mil", 6);model_types.put("auto", 7);model_types.put("others", 8);
-	}
-	private static final int MODEL_ROWS = 6;
-	private static final int TYPE_SIZE = 8;
-	private static final int MODEL_COLUMNS = 73;
-	private static double[][] model = new double[MODEL_ROWS][MODEL_COLUMNS];
-	
-	private static List<String> SITES = new ArrayList<String>();
-	private static Map<String, String> TITLES = new HashMap<String, String>();
-	static {
+
 		SITES.add(SINA);SITES.add(IFENG);SITES.add(TECENT);
 		SITES.add(SOHU);SITES.add(WANGYI);SITES.add(HAO);
 		TITLES.put("手机新浪网", SINA);TITLES.put("手机凤凰网", IFENG);TITLES.put("搜狐网", SOHU);
 		TITLES.put("手机腾讯网", TECENT);TITLES.put("手机网易网", WANGYI);
+		TITLES.put("hao123导航-上网从这里开始", HAO);
 	}
-
-	public static Map<String, PageItem> urlMap = new HashMap<String, PageItem>();
-	public static Map<String, List<PageItem>> topicMap = new HashMap<String, List<PageItem>>();
 	
 	/**
 	 * 
