@@ -16,6 +16,7 @@ public class MyDBHelper extends SQLiteOpenHelper{
 	private static final String PATH = "sdcard/Ancached_Browser/data/";
     private static final String SQL_NAME = "sdcard/Ancached_Browser/data/tracklogs.db";
     private static final String MAIN_DATA_TABLE_NAME = "history";
+    private static final String MAIN_DATA_OURL = "oriurl";
     private static final String MAIN_DATA_URL = "url";  
     private static final String MAIN_DATA_TITLE = "title";  
     private static final String MAIN_DATA_VTIME = "vtime";  
@@ -31,6 +32,7 @@ public class MyDBHelper extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase db) {  
         //½¨±í  
         String mainDataSQL = "create table if not exists " + MAIN_DATA_TABLE_NAME + "("  
+        		+ MAIN_DATA_OURL + " nvarchar(200), "
                 + MAIN_DATA_URL + " nvarchar(200), "  
                 + MAIN_DATA_TITLE + " nvarchar(200), "  
                 + MAIN_DATA_VTIME + " varchar(100), "  
@@ -46,15 +48,15 @@ public class MyDBHelper extends SQLiteOpenHelper{
 	}
     
     public List<TrackLogItem> getData() {  
-        String mainDataSQL = "select * from "+MAIN_DATA_TABLE_NAME+"";  
+        String mainDataSQL = "select * from "+ MAIN_DATA_TABLE_NAME +"";  
         File name = new File(SQL_NAME);  
         SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(name, null);
         Cursor cursor = db.rawQuery(mainDataSQL, null);   
         List<TrackLogItem> dataList = new ArrayList<TrackLogItem>();  
         if (cursor != null) {   
             while (cursor.moveToNext()) {
-            	TrackLogItem data = new TrackLogItem(cursor.getString(0), cursor.getString(1), 
-    					cursor.getString(2), cursor.getInt(3), cursor.getString(4));
+            	TrackLogItem data = new TrackLogItem(cursor.getString(0), cursor.getString(1), cursor.getString(2), 
+    					cursor.getString(3), cursor.getInt(4), cursor.getString(5));
                 dataList.add(data);  
             }  
         }  
@@ -72,8 +74,8 @@ public class MyDBHelper extends SQLiteOpenHelper{
         List<TrackLogItem> dataList = new ArrayList<TrackLogItem>();  
         if (cursor != null) {   
             while (cursor.moveToNext()) {
-            	TrackLogItem data = new TrackLogItem(cursor.getString(0), cursor.getString(1), 
-    					cursor.getString(2), cursor.getInt(3), cursor.getString(4));
+            	TrackLogItem data = new TrackLogItem(cursor.getString(0), cursor.getString(1), cursor.getString(2), 
+    					cursor.getString(3), cursor.getInt(4), cursor.getString(5));
                 dataList.add(data);  
             }  
         }  
@@ -86,8 +88,8 @@ public class MyDBHelper extends SQLiteOpenHelper{
     public void insertTable(TrackLogItem item){
     	File name = new File(SQL_NAME);
     	SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(name, null);
-		String sql = "insert into history values(?,?,?,?,?)";
-		Object[] args = new Object[]{item.getUrl(), item.getTitle(), 
+		String sql = "insert into history values(?,?,?,?,?,?)";
+		Object[] args = new Object[]{item.getOriurl(), item.getUrl(), item.getTitle(), 
 				item.getvTime().getStr(), item.getNetState(), item.getLocation()};
 		db.execSQL(sql, args);
 		Log.e("url", item.getUrl());

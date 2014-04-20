@@ -2,7 +2,7 @@ package com.example.ancached_browser;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.example.anacched_browser.R;
+import com.example.ancached_browser.R;
 import com.example.model.CacheHelper;
 import com.example.model.CacheManager;
 import com.example.model.MyDBHelper;
@@ -72,9 +72,9 @@ public class WebViewActivity extends Activity{
 	    hitPages.add(new TrackLogItem());
 	    dbHelper.insertTable(new TrackLogItem());
 	    
-		String url = "http://m.hao123.com";
-		address.setText("Hao123");
-		webView.loadUrl(url);//此处可修改成加载静态页面
+	    String url = "file:///android_asset/homesites.htm";
+		address.setText("网站导航");
+		webView.loadUrl(url);
 		webView.setWebViewClient(new WebViewClient() {
 
 			@Override
@@ -85,6 +85,8 @@ public class WebViewActivity extends Activity{
 				String n_url = CacheHelper.getUrl(url);
 				if (CacheHelper.checkUrl(n_url)){
 					//load data from cache
+					url = CacheHelper.getLocalUrl(url);
+					view.loadUrl(url);
 				}
 				else {
 					view.loadUrl(url);
@@ -102,55 +104,88 @@ public class WebViewActivity extends Activity{
 			
 			public void onPageStarted (WebView view, String url, Bitmap favicon){
 				super.onPageStarted(view, url, favicon);	
-				//开始加载页面的时候记录
-				url = CacheHelper.getUrl(url);
-				String page_title = CacheManager.getTitle(url);
-				String page_vt = getTime();
-            	int page_netState = getNetState();
-            	String page_loc = getLocation();
-            	TrackLogItem item = new TrackLogItem(url, page_title, 
-            			page_vt, page_netState, page_loc);
-				
-				//item检查、记录、包括预处理、title的处理
-				item = CacheManager.checkItem(hitPages, item);
-            	if (item != null){
-	            	hitPages.add(item);
-	            	//dbHelper.insertTable(item);
-	            	
-	            	//title处理
-	            		            	
-	            	//网页预测、缓存
-	            	final String isSite = CacheManager.checkUrl(url, view.getTitle());
-					new Thread(new Runnable() {	
-						@Override					
-						public void run() {
-							// TODO Auto-generated method stub
-							//预测下一个链接	
-							if (isSite == null && CacheManager.mapStatus){
-								String nextUrl = CacheManager.getUrl(hitPages);
-								Log.i("nextUrl", nextUrl);
-								
-								//缓存网页内容
-							}
-						}
-					}).start();
-            	}
+//				//开始加载页面的时候记录
+//				url = CacheHelper.getUrl(url);
+//				String page_title = CacheManager.getTitle(url);
+//				String page_vt = getTime();
+//            	int page_netState = getNetState();
+//            	String page_loc = getLocation();
+//            	TrackLogItem item = new TrackLogItem(url, page_title, 
+//            			page_vt, page_netState, page_loc);
+//				
+//				//item检查、记录、包括预处理、title的处理
+//				item = CacheManager.checkItem(hitPages, item);
+//            	if (item != null){
+//	            	hitPages.add(item);
+//	            	dbHelper.insertTable(item);
+//	            	
+//	            	//title处理
+//	            		            	
+//	            	//网页预测、缓存
+//	            	final String isSite = CacheManager.checkUrl(url, item.getTitle());
+//					new Thread(new Runnable() {	
+//						@Override					
+//						public void run() {
+//							// TODO Auto-generated method stub
+//							//预测下一个链接	
+//							if (isSite == null && CacheManager.mapStatus){
+//								String nextUrl = CacheManager.getUrl(hitPages);
+//								Log.i("nextUrl", nextUrl);
+//								
+//								//缓存网页内容
+//							}
+//						}
+//					}).start();
+//            	}
 			}
 			
 			public void onPageFinished (WebView view, String url){
 				address.setText(view.getTitle());
-//				String page_url = view.getUrl();
-//            	String page_title = view.getTitle();
-//            	String page_vt = getTime();
-//            	int page_netState = getNetState();
-//            	String page_loc = getLocation();
-//            	TrackLogItem item = new TrackLogItem(page_url, page_title, 
-//            			page_vt, page_netState, page_loc);
-//            	item = CacheManager.checkItem(hitPages, item);
-//            	if (item != null){
-//	            	hitPages.add(item);
-//	            	dbHelper.insertTable(item);
+				final String page_url = view.getUrl();
+            	String page_title = view.getTitle();
+            	String page_vt = getTime();
+            	int page_netState = getNetState();
+            	String page_loc = getLocation();
+            	TrackLogItem item = new TrackLogItem(url, page_url, page_title, 
+            			page_vt, page_netState, page_loc);
+            	item = CacheManager.checkItem(hitPages, item);
+            	if (item != null){
+	            	hitPages.add(item);
+	            	dbHelper.insertTable(item);
+            	
+	            	new Thread(new Runnable() {	
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							String nextUrl = CacheManager.getUrl(hitPages);
+							Log.i("nextUrl", nextUrl);
+//							if (nextUrl != ""){
+//								CacheHelper.getHTML(page_url);
+//							}
+						}
+					}).start();
+	            	//判断是否为首次加载首页，如果是则需保存映射
+	            	siteUrl = CacheManager.checkUrl(url, item.getTitle());
+	            	boolean flag = hitPages.get(hitPages.size() - 2).getUrl().contains("hao123");
+	            	if (siteUrl != null && flag){
+	            		view.loadUrl("javascript:window.handler.show(document.getElementsByTagName('html')[0].innerHTML);");
+	            	}
+            	}
+            	
+//            	siteUrl = CacheManager.checkUrl(url, view.getTitle());
+//            	boolean flag = hitPages.get(hitPages.size() - 2).getUrl().contains("hao123");
+//            	if (siteUrl != null && flag){
+//            		CacheManager.mapStatus = false;
+//            		view.loadUrl("javascript:window.handler.show(document.getElementsByTagName('html')[0].innerHTML);");
 //            	
+//            		while (!CacheManager.mapStatus){
+//            			try {
+//							Thread.sleep(100);
+//						} catch (InterruptedException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//            		}
 //	            	new Thread(new Runnable() {	
 //						@Override
 //						public void run() {
@@ -159,37 +194,7 @@ public class WebViewActivity extends Activity{
 //							Log.i("nextUrl", nextUrl);
 //						}
 //					}).start();
-//	            	//判断是否为首次加载首页，如果是则需保存映射
-//	            	siteUrl = CacheManager.checkUrl(url, item.getTitle());
-//	            	boolean flag = hitPages.get(hitPages.size() - 2).getUrl().contains("hao123");
-//	            	if (siteUrl != null && flag){
-//	            		view.loadUrl("javascript:window.handler.show(document.getElementsByTagName('html')[0].innerHTML);");
-//	            	}
 //            	}
-            	
-            	siteUrl = CacheManager.checkUrl(url, view.getTitle());
-            	boolean flag = hitPages.get(hitPages.size() - 2).getUrl().contains("hao123");
-            	if (siteUrl != null && flag){
-            		CacheManager.mapStatus = false;
-            		view.loadUrl("javascript:window.handler.show(document.getElementsByTagName('html')[0].innerHTML);");
-            	
-            		while (!CacheManager.mapStatus){
-            			try {
-							Thread.sleep(100);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-            		}
-	            	new Thread(new Runnable() {	
-						@Override
-						public void run() {
-							// TODO Auto-generated method stub
-							String nextUrl = CacheManager.getUrl(hitPages);
-							Log.i("nextUrl", nextUrl);
-						}
-					}).start();
-            	}
             }
 		});
 		

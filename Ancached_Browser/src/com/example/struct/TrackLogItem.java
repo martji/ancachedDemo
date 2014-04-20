@@ -12,14 +12,15 @@ public class TrackLogItem {
 		// TODO Auto-generated method stub
 
 	}
-	
+	private String oriurl;
 	private String url;
 	private String title;
 	private STime vTime;
 	private int netState;
 	private String location;
 	
-	public TrackLogItem(String url, String title, String vTime, int netState, String location){
+	public TrackLogItem(String oriurl, String url, String title, String vTime, int netState, String location){
+		this.oriurl = oriurl;
 		this.url = url;
 		this.title = title;
 		this.vTime = new STime(vTime);
@@ -38,6 +39,7 @@ public class TrackLogItem {
 
 	public TrackLogItem() {
 		// TODO Auto-generated constructor stub
+		this.oriurl = "--";
 		this.url = "----";
 		this.title = "New Launch";
 		this.vTime = new STime(getTime());
@@ -107,5 +109,13 @@ public class TrackLogItem {
 
 	public void setLocation(String location) {
 		this.location = location;
+	}
+
+	public String getOriurl() {
+		return oriurl;
+	}
+
+	public void setOriurl(String oriurl) {
+		this.oriurl = oriurl;
 	}
 }

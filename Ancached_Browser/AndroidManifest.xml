@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.anacched_browser"
+    package="com.example.ancached_browser"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -41,6 +41,16 @@
         </activity>
         <activity 
             android:name="com.example.ancached_browser.WebViewActivity" 
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            >      
+        </activity>
+        <activity 
+            android:name="com.example.ancached_browser.CacheActivity" 
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            >      
+        </activity>
+        <activity 
+            android:name="com.example.ancached_browser.HomeActivity" 
             android:windowSoftInputMode="stateHidden|adjustPan"
             >      
         </activity>

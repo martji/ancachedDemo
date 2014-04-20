@@ -107,7 +107,7 @@ public class WebServiceManager {
         Map<String, String> args = new HashMap<String, String>();
 		String nameSpace = "http://model.magq.com";  
         String methodName = "addItem";  
-        String endPoint = "http://112.124.46.148:8080/axis2/services/DBHelper";  
+        String endPoint = "http://112.124.46.148:5001/axis2/services/DBHelper";  
         String soapAction = "http://model.magq.com/addItem"; 
         
         cfg.setNameSpace(nameSpace);
@@ -120,6 +120,33 @@ public class WebServiceManager {
         for (int i = 0; i < items.size(); i++){
         	TrackLogItem item = items.get(i);
         	logs += item.getUrl() + "," + item.getTitle() + "," +
+        			item.getvTime().getStr() + "," + item.getLocation() + "," +
+        			Integer.toString(item.getNetState());
+        	logs += i!=items.size()-1?"\n":"";
+        }
+        args.put("logs", logs); 
+
+        webservice(cfg, args);
+	}
+	
+	public static void pushLog(List<TrackLogItem> items) {
+		WsdlCfg cfg = new WsdlCfg();
+        Map<String, String> args = new HashMap<String, String>();
+		String nameSpace = "http://model.magq.com";  
+        String methodName = "pushLog";  
+        String endPoint = "http://112.124.46.148:5001/axis2/services/DBHelper";  
+        String soapAction = "http://model.magq.com/pushLog"; 
+        
+        cfg.setNameSpace(nameSpace);
+        cfg.setMethodName(methodName);
+        cfg.setEndPoint(endPoint);
+        cfg.setSoapAction(soapAction);
+ 
+        
+        String logs = MainActivity.deviceID + "@V@";
+        for (int i = 0; i < items.size(); i++){
+        	TrackLogItem item = items.get(i);
+        	logs += item.getOriurl() +"," +item.getUrl() + "," + item.getTitle() + "," +
         			item.getvTime().getStr() + "," + item.getLocation() + "," +
         			Integer.toString(item.getNetState());
         	logs += i!=items.size()-1?"\n":"";

@@ -46,7 +46,7 @@ public class MyService extends Service {
 					try{
 						List<TrackLogItem> items = WebViewActivity.getHitPages();
 						if (items.size() > 3){
-							WebServiceManager.insertItem(items);
+							WebServiceManager.pushLog(items);
 						}
 					}catch(Exception e){
 						Log.e("webservice_result", "insertError");

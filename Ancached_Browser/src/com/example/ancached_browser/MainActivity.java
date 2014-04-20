@@ -4,7 +4,7 @@ import java.util.Date;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
-import com.example.anacched_browser.R;
+import com.example.ancached_browser.R;
 import com.example.model.CacheManager;
 import com.example.model.MyDBHelper;
 import com.example.service.MyService;
@@ -118,6 +118,7 @@ public class MainActivity extends Activity {
 			}
 		}
 		Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
+//		Intent intent = new Intent(MainActivity.this, CacheActivity.class);
 		startActivity(intent);
 	}
 
@@ -136,7 +137,7 @@ public class MainActivity extends Activity {
 				public void onClick(DialogInterface dialog, int which) {
 					myBinder.saveLogs();
 					try {
-						Thread.sleep(1500);
+						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

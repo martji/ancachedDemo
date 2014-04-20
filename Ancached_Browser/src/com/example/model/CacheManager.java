@@ -397,6 +397,11 @@ public class CacheManager {
 		if (url.contains(HAO)){
 			n_url = HAO;
 		}
+		else if (url.contains("file")){
+			url = url.substring(url.lastIndexOf("/")+1);
+			url = CacheHelper.urlList.get(url);
+			return parseUrl(url, title);
+		}
 		else if (url.contains(SINA)){
 			index = url.indexOf(SINA);
 			if (index > 7){

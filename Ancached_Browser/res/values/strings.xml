@@ -7,5 +7,6 @@
     <string name="refresh">GO</string>
     <string name="start">START</string>
     <string name="name">Ancached Browser</string>
+    <string name="test">GetHTML</string>
 
 </resources>
