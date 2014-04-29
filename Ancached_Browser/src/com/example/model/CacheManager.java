@@ -72,6 +72,12 @@ public class CacheManager {
 		TITLES.put("手机新浪网", SINA);TITLES.put("手机凤凰网", IFENG);TITLES.put("搜狐网", SOHU);
 		TITLES.put("手机腾讯网", TECENT);TITLES.put("手机网易网", WANGYI);
 		TITLES.put("hao123导航-上网从这里开始", HAO);
+		
+		for (int i = 0; i < MODEL_ROWS; i++){
+			for (int j = 0; j < MODEL_COLUMNS; j++){
+				model[i][j] = 0;
+			}
+		}
 	}
 	
 	/**
@@ -131,7 +137,10 @@ public class CacheManager {
 	 */
 	public static String getUrlInner(String url, List<PageItem> items) {
 		// TODO Auto-generated method stub
-		String nextUrl = HAO;
+		if (items != null){
+			return items.get(0).getUrl();
+		}
+		String nextUrl = TECENT;
 		return nextUrl;
 	}
 	

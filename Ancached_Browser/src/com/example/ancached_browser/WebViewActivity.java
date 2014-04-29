@@ -70,11 +70,12 @@ public class WebViewActivity extends Activity{
 		
 		hitPages = new ArrayList<TrackLogItem>();
 	    hitPages.add(new TrackLogItem());
-	    dbHelper.insertTable(new TrackLogItem());
+//	    dbHelper.insertTable(new TrackLogItem());
 	    
 	    String url = "file:///android_asset/homesites.htm";
 		address.setText("网站导航");
 		webView.loadUrl(url);
+		
 		webView.setWebViewClient(new WebViewClient() {
 
 			@Override
@@ -85,7 +86,7 @@ public class WebViewActivity extends Activity{
 				String n_url = CacheHelper.getUrl(url);
 				if (CacheHelper.checkUrl(n_url)){
 					//load data from cache
-					url = CacheHelper.getLocalUrl(url);
+					url = CacheHelper.getLocalUrl(n_url);
 					view.loadUrl(url);
 				}
 				else {
@@ -146,12 +147,12 @@ public class WebViewActivity extends Activity{
             	String page_vt = getTime();
             	int page_netState = getNetState();
             	String page_loc = getLocation();
-            	TrackLogItem item = new TrackLogItem(url, page_url, page_title, 
+            	TrackLogItem item = new TrackLogItem(page_url, url, page_title, 
             			page_vt, page_netState, page_loc);
             	item = CacheManager.checkItem(hitPages, item);
             	if (item != null){
 	            	hitPages.add(item);
-	            	dbHelper.insertTable(item);
+//	            	dbHelper.insertTable(item);
             	
 	            	new Thread(new Runnable() {	
 						@Override
@@ -159,9 +160,9 @@ public class WebViewActivity extends Activity{
 							// TODO Auto-generated method stub
 							String nextUrl = CacheManager.getUrl(hitPages);
 							Log.i("nextUrl", nextUrl);
-//							if (nextUrl != ""){
-//								CacheHelper.getHTML(page_url);
-//							}
+							if (nextUrl != ""){
+								CacheHelper.getHTML(nextUrl);
+							}
 						}
 					}).start();
 	            	//判断是否为首次加载首页，如果是则需保存映射

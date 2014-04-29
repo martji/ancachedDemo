@@ -45,14 +45,6 @@ public class CacheHelper {
 		// TODO Auto-generated method stub
 		return path + cachedList.get(url);
 	}
-	public static String getOriginUrl(String url) {
-		// TODO Auto-generated method stub
-		if (url.contains("hao123") && url.contains("sina")){
-			return "http://sina.cn/?wm=3177";
-		}
-		return url;
-	}
-
 	
 	public static void getHTML(String address){
 		try {

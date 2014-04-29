@@ -98,10 +98,6 @@ public class MainActivity extends Activity {
 				dbHelper = new MyDBHelper(MainActivity.this);
 				SQLiteDatabase db = dbHelper.getDb();
 				dbHelper.onCreate(db);
-//				List<TrackLogItem> result = dbHelper.getData();
-//				//Êý¾ÝÇ¨ÒÆ
-//				WebServiceManager.insertItem(result);
-//				CacheManager.trainModel(result);
 				CacheManager.getModel();
 				String nextUrl = CacheManager.getUrl();
 				Log.i("nextUrl", nextUrl);
@@ -118,7 +114,6 @@ public class MainActivity extends Activity {
 			}
 		}
 		Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
-//		Intent intent = new Intent(MainActivity.this, CacheActivity.class);
 		startActivity(intent);
 	}
 
