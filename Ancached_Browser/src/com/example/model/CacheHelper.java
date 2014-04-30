@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import android.os.Environment;
@@ -14,15 +15,40 @@ public class CacheHelper {
 	
 	public static Map<String, String> cachedList = new HashMap<String, String>();
 	public static Map<String, String> urlList = new HashMap<String, String>();
+	public static Map<String, String> localsite = new HashMap<String, String>();
 	static {
 		//cachedList.put("http://sina.cn/", "sina.htm");
 		urlList.put("homesites.htm", "http://m.hao123.com");
+		
+		localsite.put("http://sina.cn", "sina.html");
+		localsite.put("http://m.sohu.com", "sohu.html");
+		localsite.put("http://info.3g.qq.com", "tecent.html");
+		localsite.put("http://i.ifeng.com", "ifeng.html");
+		localsite.put("http://3g.163.com/touch", "163.html");	
 	}
 	public static String path = "file:///" + Environment.getExternalStorageDirectory().getPath() 
 			+ "/Ancached_Browser/file/";
-	/**
-	 * @return : ÅÐ¶ÏurlÊÇ·ñÒÑ±»»º´æ
-	 */
+	
+	public static void init() {
+		File f = new File("sdcard/Ancached_Browser/file");
+		File[] files = f.listFiles();
+		if (files != null){
+			Date current_dt = new Date();
+			for (File file : files) {
+				if (localsite.containsValue(file.getName())){
+					file.delete();
+				}
+				else {
+					Date dt = new Date(file.lastModified());
+					long time = current_dt.getTime() - dt.getTime();
+					if (time/1000/24/60/60 >=1){
+						file.delete();
+					}
+				}
+			}
+		}
+	}
+	
 	public static String getUrl(String url) {
 		// TODO Auto-generated method stub
 		if (url.contains("sina") && url.contains("&clicktime")){
@@ -48,27 +74,35 @@ public class CacheHelper {
 	
 	public static void getHTML(String address){
 		try {
-			URL url = new URL(address);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setRequestMethod("GET");
-			connection.setReadTimeout(5000);
-			InputStream inStream= connection.getInputStream();
-			
-			String localaddress = address.replace("http://", "");
-			localaddress = localaddress.replace("?", "");
-			localaddress = localaddress.replace("/", "");
-			localaddress += ".htm";
-			File fileName = new File("sdcard/Ancached_Browser/file/" + localaddress);
-			FileOutputStream fout = new FileOutputStream(fileName);
-			byte[] buffer = new byte[1024];
-			int len=0;
-			while((len=inStream.read(buffer))!=-1){
-				fout.write(buffer, 0, len);
+			if (!cachedList.containsKey(address)){
+				URL url = new URL(address);
+				HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+				connection.setRequestMethod("GET");
+				connection.setReadTimeout(5000);
+				InputStream inStream= connection.getInputStream();
+				
+				String localaddress = "";
+				if (localsite.containsKey(address)) {
+					localaddress = localsite.get(address);
+				}
+				else {
+					localaddress = address.replace("http://", "");
+					localaddress = localaddress.replace("?", "");
+					localaddress = localaddress.replace("/", "");
+					localaddress += ".htm";
+				}
+				File fileName = new File("sdcard/Ancached_Browser/file/" + localaddress);
+				FileOutputStream fout = new FileOutputStream(fileName);
+				byte[] buffer = new byte[1024];
+				int len=0;
+				while((len=inStream.read(buffer))!=-1){
+					fout.write(buffer, 0, len);
+				}
+				inStream.close();
+				fout.close();
+				cachedList.put(address, localaddress);
+				urlList.put(localaddress, address);
 			}
-			inStream.close();
-			fout.close();
-			cachedList.put(address, localaddress);
-			urlList.put(localaddress, address);
 			
 //			ByteArrayOutputStream data=new ByteArrayOutputStream();
 //			byte[] buffer = new byte[1024];

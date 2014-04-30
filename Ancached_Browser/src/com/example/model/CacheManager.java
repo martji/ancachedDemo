@@ -43,7 +43,7 @@ public class CacheManager {
 	private static final int MODEL_COLUMNS = 73;
 	private static double[][] model = new double[MODEL_ROWS][MODEL_COLUMNS];
 		
-	public static boolean mapStatus = false;
+	public static boolean mapStatus = true;
 	public static Map<String, PageItem> urlMap = new HashMap<String, PageItem>();
 	public static Map<String, List<PageItem>> topicMap = new HashMap<String, List<PageItem>>();
 	
@@ -138,9 +138,13 @@ public class CacheManager {
 	public static String getUrlInner(String url, List<PageItem> items) {
 		// TODO Auto-generated method stub
 		if (items != null){
-			return items.get(0).getUrl();
+			String next_url =  items.get(0).getUrl();
+			if (!next_url.contains("http://")){
+				next_url = "http://" + next_url;
+			}
+			return next_url;
 		}
-		String nextUrl = TECENT;
+		String nextUrl = "";
 		return nextUrl;
 	}
 	

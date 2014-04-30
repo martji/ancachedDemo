@@ -70,7 +70,7 @@ public class WebViewActivity extends Activity{
 		
 		hitPages = new ArrayList<TrackLogItem>();
 	    hitPages.add(new TrackLogItem());
-//	    dbHelper.insertTable(new TrackLogItem());
+	    dbHelper.insertTable(new TrackLogItem());
 	    
 	    String url = "file:///android_asset/homesites.htm";
 		address.setText("网站导航");
@@ -84,6 +84,7 @@ public class WebViewActivity extends Activity{
 				Log.i("url", url);
 				address.setText(url);
 				String n_url = CacheHelper.getUrl(url);
+				//判断是否有缓存
 				if (CacheHelper.checkUrl(n_url)){
 					//load data from cache
 					url = CacheHelper.getLocalUrl(n_url);
@@ -152,25 +153,35 @@ public class WebViewActivity extends Activity{
             	item = CacheManager.checkItem(hitPages, item);
             	if (item != null){
 	            	hitPages.add(item);
-//	            	dbHelper.insertTable(item);
+	            	dbHelper.insertTable(item);
             	
+	            	//判断是否为首次加载首页，如果是则需保存映射
+	            	siteUrl = CacheManager.checkUrl(url, item.getTitle());
+	            	boolean flag = hitPages.get(hitPages.size() - 2).getUrl().contains("hao123");
+	            	if (siteUrl != null && flag){
+	            		CacheManager.mapStatus = false;
+	            		view.loadUrl("javascript:window.handler.show(document.getElementsByTagName('html')[0].innerHTML);");
+	            	}            	
+	            	while (!CacheManager.mapStatus){
+            			try {
+							Thread.sleep(50);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+            		}
+	            	
 	            	new Thread(new Runnable() {	
 						@Override
 						public void run() {
 							// TODO Auto-generated method stub
 							String nextUrl = CacheManager.getUrl(hitPages);
 							Log.i("nextUrl", nextUrl);
-							if (nextUrl != ""){
-								CacheHelper.getHTML(nextUrl);
-							}
+//							if (nextUrl != "") {
+//								CacheHelper.getHTML(nextUrl);
+//							}
 						}
 					}).start();
-	            	//判断是否为首次加载首页，如果是则需保存映射
-	            	siteUrl = CacheManager.checkUrl(url, item.getTitle());
-	            	boolean flag = hitPages.get(hitPages.size() - 2).getUrl().contains("hao123");
-	            	if (siteUrl != null && flag){
-	            		view.loadUrl("javascript:window.handler.show(document.getElementsByTagName('html')[0].innerHTML);");
-	            	}
             	}
             	
 //            	siteUrl = CacheManager.checkUrl(url, view.getTitle());

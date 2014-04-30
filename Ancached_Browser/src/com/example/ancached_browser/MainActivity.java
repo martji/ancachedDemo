@@ -5,6 +5,7 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.example.ancached_browser.R;
+import com.example.model.CacheHelper;
 import com.example.model.CacheManager;
 import com.example.model.MyDBHelper;
 import com.example.service.MyService;
@@ -69,8 +70,6 @@ public class MainActivity extends Activity {
 			public void run() {
 				// TODO Auto-generated method stub
 				Date curDate = new Date(System.currentTimeMillis());
-//				WebServiceManager.getTokens2("科比大战詹姆斯");
-//				Tokenizer.getKeys("科比大战詹姆斯");
 				Date endDate = new Date(System.currentTimeMillis());
 				long diff = endDate.getTime() - curDate.getTime();
 				Log.e("webservice_result", Long.toString(diff));
@@ -101,6 +100,8 @@ public class MainActivity extends Activity {
 				CacheManager.getModel();
 				String nextUrl = CacheManager.getUrl();
 				Log.i("nextUrl", nextUrl);
+				
+				CacheHelper.init();
 				state = true;
 			}
 		}).start();

@@ -39,6 +39,7 @@ public class MyDBHelper extends SQLiteOpenHelper{
                 + MAIN_DATA_NET + " int, "
         		+ MAIN_DATA_LOC + " nvarchar(200));";
         db.execSQL(mainDataSQL); 
+        
         db.close();
     }
     

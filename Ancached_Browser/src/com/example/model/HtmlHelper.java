@@ -65,7 +65,7 @@ public class HtmlHelper {
         		if (site.equals(IFENG)){
 	        		url = url.substring(url.indexOf("\"")+1, url.lastIndexOf("\""));
 	        		if (url.startsWith("/")){
-	        			String type = url.substring(1,url.substring(1).indexOf("/"));
+	        			String type = url.substring(1,url.substring(1).indexOf("/")+1);
 	        			url = url.replace("&amp;", "&");
 	        			url = IFENG + url;
 	        			PageItem pItem = new PageItem(url, title);
