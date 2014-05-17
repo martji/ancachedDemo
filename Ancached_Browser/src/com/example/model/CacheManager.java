@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.util.EncodingUtils;
+import com.ancached.prefetching.Prefetch;
+import com.ancached.prefetching.UtilMethods;
 import com.example.struct.Featuer;
 import com.example.struct.PageItem;
 import com.example.struct.TrackLogItem;
@@ -118,6 +120,7 @@ public class CacheManager {
 		// TODO Auto-generated method stub
 		TrackLogItem item = hitPages.get(hitPages.size()-1);
 		String url = item.getUrl();
+		String title = item.getTitle();
 		if (url.equals(HAO)){
 			return "";
 		}
@@ -125,7 +128,7 @@ public class CacheManager {
 			String topic = CacheManager.getTopic(url);
 			Log.i("nextUrl_topic", topic);
 			List<PageItem> items = CacheManager.topicMap.get(topic);
-			return getUrlInner(url, items);
+			return getUrlInner(url, title, items);
 		}
 	}
 	
@@ -135,15 +138,20 @@ public class CacheManager {
 	 * @param items 链接集合
 	 * @return 接下来可能访问的链接
 	 */
-	public static String getUrlInner(String url, List<PageItem> items) {
-		// TODO Auto-generated method stub
-		if (items != null){
-			String next_url =  items.get(0).getUrl();
-			if (!next_url.contains("http://")){
-				next_url = "http://" + next_url;
-			}
-			return next_url;
-		}
+	public static String getUrlInner(String url, String title, List<PageItem> items) {
+		String site, topic;
+		site = UtilMethods.checkSite(url);
+		topic = items.get(0).getType();
+		Prefetch.getNextUrls(site, topic, title, items);
+	
+//		if (items != null){
+//			String next_url =  items.get(0).getUrl();
+//			Log.i("next_title", items.get(0).getTitle());
+//			if (!next_url.contains("http://")){
+//				next_url = "http://" + next_url;
+//			}
+//			return next_url;
+//		}
 		String nextUrl = "";
 		return nextUrl;
 	}
@@ -407,7 +415,7 @@ public class CacheManager {
 	public static String parseUrl(String url, String title){
 		int index = 0;
 		String n_url = "";
-		if (url.contains(HAO)){
+		if (url.contains("homesites")){
 			n_url = HAO;
 		}
 		else if (url.contains("file")){
