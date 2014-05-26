@@ -2,7 +2,6 @@ package com.example.ancached_browser;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.ancached.params.Params;
 import com.ancached.prefetching.Prefetch;
 import com.example.ancached_browser.R;
@@ -10,6 +9,7 @@ import com.example.model.CacheHelper;
 import com.example.model.CacheManager;
 import com.example.model.MyDBHelper;
 import com.example.struct.TrackLogItem;
+import com.example.webservice.WebServiceManager;
 import android.app.Activity;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -19,7 +19,10 @@ import android.os.Bundle;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
@@ -35,6 +38,8 @@ import android.graphics.Bitmap;
 
 public class WebViewActivity extends Activity{
 	
+	private static final int DEL_MENU_ID = Menu.FIRST;
+	private static final int full_MENU_ID = Menu.FIRST + 1;
 	private TextView address;
 	private Button refresh;
 	private ProgressBar progressBar;
@@ -42,6 +47,12 @@ public class WebViewActivity extends Activity{
 	
 	private MyDBHelper dbHelper;
 	private static List<TrackLogItem> hitPages = null;
+	
+	private final int PREFETCHCOUNTS = 1;
+	private List<String> visitedSites;
+	private List<String> realRouters;
+	private List<String> visitedTitles;
+	public static List<String> visitedUrls;
 
 	public static List<TrackLogItem> getHitPages() {
 		return hitPages;
@@ -72,8 +83,13 @@ public class WebViewActivity extends Activity{
 		settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 		
 		hitPages = new ArrayList<TrackLogItem>();
-	    hitPages.add(new TrackLogItem());
-//	    dbHelper.insertTable(new TrackLogItem());
+		visitedSites = new ArrayList<String>();
+		realRouters = new ArrayList<String>();
+		visitedTitles = new ArrayList<String>();
+		visitedUrls = new ArrayList<String>();
+	    TrackLogItem item = new TrackLogItem(); 
+	    hitPages.add(item);
+		//dbHelper.insertTable(item);
 	    Prefetch.setLaunchTag(0);
 	    
 	    String url = "file:///android_asset/homesites.htm";
@@ -88,6 +104,7 @@ public class WebViewActivity extends Activity{
 				Log.i("url", url);
 				address.setText(url);
 				String n_url = CacheHelper.getUrl(url);
+				visitedUrls.add(n_url);
 				//ÅÐ¶ÏÊÇ·ñÓÐ»º´æ
 				n_url = CacheHelper.checkUrl(n_url);
 				if (n_url != null) {
@@ -122,35 +139,39 @@ public class WebViewActivity extends Activity{
 				
 				//item¼ì²é¡¢¼ÇÂ¼¡¢°üÀ¨Ô¤´¦Àí¡¢titleµÄ´¦Àí
 				item = CacheManager.checkItem(hitPages, item);
-            	if (item != null){
+            	if (item != null && page_title != ""){
 	            	hitPages.add(item);
 //	            	dbHelper.insertTable(item);
-	            	//ÍøÒ³Ô¤²â¡¢»º´æ
-	            	final String isSite = CacheManager.checkUrl(url, item.getTitle());
-					new Thread(new Runnable() {	
-						@Override					
-						public void run() {
-							// TODO Auto-generated method stub
-							//Ô¤²âÏÂÒ»¸öÁ´½Ó	
-							if (isSite == null && CacheManager.mapStatus){
-								String nextUrl = CacheManager.getUrl(hitPages);
-								Log.i("nextUrl", nextUrl);							
-								//»º´æÍøÒ³ÄÚÈÝ
-								Prefetch.setPageType(1);
-								if (nextUrl != "") {
-									CacheHelper.getHTML(nextUrl);
-								}
-							}
-						}
-					}).start();
+	            	
+	            	//prefetch
+	            	getPrefetch(url, item);
             	}
 			}
 			
 			public void onPageFinished (WebView view, String url){
-				address.setText(view.getTitle());	
+				address.setText(view.getTitle());
+				
+				url = CacheHelper.getUrl(url);
+				String page_title = view.getTitle();
+				String page_vt = getTime();
+            	int page_netState = Params.getNET_STATE();
+            	String page_loc = getLocation();
+            	TrackLogItem item = new TrackLogItem(url, url, page_title, 
+            			page_vt, page_netState, page_loc);
+            	item = CacheManager.checkItem(hitPages, item);
+            	if (item != null){
+	            	hitPages.add(item);
+//	            	dbHelper.insertTable(item);
+	            	getPrefetch(url, item);
+            	}
+				
             	siteUrl = CacheManager.checkUrl(url, view.getTitle());
             	boolean flag = hitPages.get(hitPages.size() - 2).getUrl().contains("hao123");
-            	if (siteUrl != null && flag){
+            	if (siteUrl != null && flag && !visitedSites.contains(siteUrl)){
+            		visitedSites.add(siteUrl);
+            		realRouters = new ArrayList<String>();
+            		realRouters.add(siteUrl);
+            		Prefetch.setUrl("http://" + siteUrl);
             		CacheManager.mapStatus = false;
             		view.loadUrl("javascript:window.handler.show(document." +
             				"getElementsByTagName('html')[0].innerHTML);");
@@ -167,11 +188,20 @@ public class WebViewActivity extends Activity{
 						@Override
 						public void run() {
 							// TODO Auto-generated method stub
-							String nextUrl = CacheManager.getUrl(hitPages);
-							Log.i("nextUrl", nextUrl);
 							Prefetch.setPageType(0);
-							if (nextUrl != "") {
-								CacheHelper.getHTML(nextUrl);
+							List<String> nextUrls = CacheManager.getUrl(realRouters, hitPages);
+							
+							if (nextUrls != null && nextUrls.size() != 0) {
+								for (int i = 0, count = 0; i < nextUrls.size() 
+										&& count< PREFETCHCOUNTS; i++){
+									String nextUrl = nextUrls.get(i);
+									if (!CacheHelper.cachedList.containsKey(nextUrl)){
+										Log.i("next_title", CacheManager.getTitle(nextUrl));
+										CacheHelper.getHTML(nextUrl);
+										count ++;
+									}
+								}
+								CacheHelper.showFetchedFiles();
 							}
 						}
 					}).start();
@@ -202,6 +232,74 @@ public class WebViewActivity extends Activity{
 		});
 	}
 	
+	protected void getPrefetch(String url, TrackLogItem item) {
+		// TODO Auto-generated method stub
+		//ÍøÒ³Ô¤²â¡¢»º´æ
+    	final String isSite = CacheManager.checkUrl(url, item.getTitle());
+    	if (isSite == null){
+    		realRouters.add(item.getUrl());
+    		visitedTitles.add(item.getTitle());
+    	}
+		new Thread(new Runnable() {	
+			@Override					
+			public void run() {
+				// TODO Auto-generated method stub
+				//Ô¤²âÏÂÒ»¸öÁ´½Ó	
+				if (isSite == null && CacheManager.mapStatus){
+					Prefetch.setPageType(1);
+					List<String> nextUrls = CacheManager.getUrl(realRouters, hitPages);
+					//»º´æÍøÒ³ÄÚÈÝ
+					if (nextUrls != null && nextUrls.size() != 0) {
+						for (int i = 0, count = 0; i < nextUrls.size() 
+								&& count< PREFETCHCOUNTS; i++){
+							String nextUrl = nextUrls.get(i);
+							if (!CacheHelper.cachedList.containsKey(nextUrl)){
+								if (compareTitle(CacheManager.getTitle(nextUrl))){
+									Log.i("next_title", CacheManager.getTitle(nextUrl));
+									CacheHelper.getHTML(nextUrl);
+									count ++;
+								}
+							}
+						}
+						CacheHelper.showFetchedFiles();
+					}
+				}
+			}
+		}).start();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		super.onCreateOptionsMenu(menu);
+		menu.add(0, DEL_MENU_ID, 0, R.string.del);
+		menu.add(0, full_MENU_ID, 0, R.string.full);
+		return true;
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case DEL_MENU_ID:
+				dbHelper.delUrlList();
+				return true;
+			case full_MENU_ID:
+				if (item.getTitle().equals("È«ÆÁÏÔÊ¾")){
+					this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+							WindowManager.LayoutParams.FLAG_FULLSCREEN);
+					item.setTitle(R.string.unfull);
+				}
+				else {
+					final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+				     attrs.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
+				     getWindow().setAttributes(attrs);
+				     getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+				     item.setTitle(R.string.full);
+				}
+				return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+	
 	class Handler {
 		@JavascriptInterface
 		public void show(String data) {
@@ -219,6 +317,11 @@ public class WebViewActivity extends Activity{
         }  
         return super.onKeyDown(keyCode, event);
     }
+	
+	private boolean compareTitle(String title) {
+		// TODO Auto-generated method stub
+		return true;
+	}
 	
 	public String getTime(){
 		String stime = "";
@@ -259,5 +362,18 @@ public class WebViewActivity extends Activity{
 			return MainActivity.location.getAddrStr();
 		}
 		return "";
+	}
+	
+	public void pushItem(final TrackLogItem item){
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				List<TrackLogItem> items = new ArrayList<TrackLogItem>();
+				items.add(item);
+				WebServiceManager.pushLog(items);
+			}
+		}).start();
 	}
 }

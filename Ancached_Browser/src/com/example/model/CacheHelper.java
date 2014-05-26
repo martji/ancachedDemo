@@ -94,8 +94,9 @@ public class CacheHelper {
 	public static void initPage() {
 		File fileDir = new File(PAGE_DIR);
 		// Create the dir if it doesn't exist
-		if (!fileDir.exists())
+		if (!fileDir.exists()){
 			fileDir.mkdir();
+		}
 		File[] files = fileDir.listFiles();
 		Log.d("fileList", files.length + "");
 		if (files != null) {
@@ -127,48 +128,78 @@ public class CacheHelper {
 		// TODO delete the unused resource(periodly?)
 		// RES DIR
 		File fileDir = new File(RES_DIR);
-		if (!fileDir.exists())
+		if (!fileDir.exists()){
 			fileDir.mkdir();
-
-		File cssDir = new File(CSS_DIR);
-		if (!cssDir.exists())
-			cssDir.mkdir();
-
-		// RES MAPPING(file and css)
-		File mapXML = new File(MAP_ADR);
-		if (!mapXML.exists()) {
-			try {
-				mapXML.createNewFile();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+		}
+		File[] files = fileDir.listFiles();
+		if (files != null) {
+			for (File file : files) {
+				String fileName = APP_PATH + "res/" + file.getName();
+				if (urlList.containsKey(fileName)) {
+					cachedList.put(urlList.get(fileName), fileName);
+				}
 			}
 		}
-		try {
-			Document doc = Jsoup.parse(mapXML, "UTF-8",
-					"http://www.oschina.net/");
-			Elements eles = doc.body().children();
-			for (Element ele : eles) {
-				String url = ele.attr("url");
-				String localaddress = ele.attr("localaddress");
-				if (url != null){
-					cachedList.put(url, localaddress);
-					if(url.contains("file/"))
-						urlList.put(localaddress, url);
+
+		File cssDir = new File(CSS_DIR);
+		if (!cssDir.exists()){
+			cssDir.mkdir();
+		}
+		files = fileDir.listFiles();
+		if (files != null) {
+			for (File file : files) {
+				String fileName = APP_PATH + "css/" + file.getName();
+				if (urlList.containsKey(fileName)) {
+					cachedList.put(urlList.get(fileName), fileName);
 				}
-				if (localaddress.contains("unparsed")) {
+				if (fileName.contains("unparsed")) {
 					if (Params.getNET_STATE() == 1) {
 						String ftpAddress = APP_PATH + "css";
+						String url = urlList.get(fileName);
 						Thread dealWithCss = new Thread(new getCssRESThread(
-								url, localaddress.replace(ftpAddress, CSS_DIR),
-								localaddress));
+								url, fileName.replace(ftpAddress, CSS_DIR),
+								fileName));
 						dealWithCss.start();
 					}
 				}
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+
+		// RES MAPPING(file and css)
+//		File mapXML = new File(MAP_ADR);
+//		if (!mapXML.exists()) {
+//			try {
+//				mapXML.createNewFile();
+//			} catch (IOException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+//		}
+//		try {
+//			Document doc = Jsoup.parse(mapXML, "UTF-8",
+//					"http://www.oschina.net/");
+//			Elements eles = doc.body().children();
+//			for (Element ele : eles) {
+//				String url = ele.attr("url");
+//				String localaddress = ele.attr("localaddress");
+//				if (url != null){
+//					cachedList.put(url, localaddress);
+//					if(url.contains("file/"))
+//						urlList.put(localaddress, url);
+//				}
+//				if (localaddress.contains("unparsed")) {
+//					if (Params.getNET_STATE() == 1) {
+//						String ftpAddress = APP_PATH + "css";
+//						Thread dealWithCss = new Thread(new getCssRESThread(
+//								url, localaddress.replace(ftpAddress, CSS_DIR),
+//								localaddress));
+//						dealWithCss.start();
+//					}
+//				}
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	public static String getUrl(String url) {
@@ -320,6 +351,7 @@ public class CacheHelper {
 			}
 			if (!cachedList.containsKey(url)) {
 				getResThread grt = new getResThread(url, 1);
+				cachedList.put(url, url);
 				exec.execute(grt);
 			}
 		}
@@ -338,6 +370,7 @@ public class CacheHelper {
 			String url = iter.next();
 			if (!cachedList.containsKey(url)) {
 				getResThread grt = new getResThread(url, 0);
+				cachedList.put(url, url);
 				exec.execute(grt);
 			}
 		}
@@ -438,6 +471,7 @@ public class CacheHelper {
 				inStream.close();
 				fout.close();
 				cachedList.put(url, ftpAddress);
+				MyDBHelper.insertCachedTable(ftpAddress, url);
 				/*
 				 * Element tmpItem = root.appendElement("res");
 				 * tmpItem.attr("url", url); tmpItem.attr("localaddress",
@@ -574,7 +608,7 @@ public class CacheHelper {
 				urlList.put(ftpAddress,address);
 
 				// TODO:prefetch the resources
-//				getRES(urlParser(absoluteAddress, 0), absoluteAddress);
+				getRES(urlParser(absoluteAddress, 0), absoluteAddress);
 			} else {
 				String localFTP = cachedList.get(address);
 				localFTP = localFTP.replace(APP_PATH + "file/", PAGE_DIR + "/");

@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,8 +16,11 @@ import java.util.Map;
 import org.apache.http.util.EncodingUtils;
 import com.ancached.prefetching.Prefetch;
 import com.ancached.prefetching.UtilMethods;
+import com.example.ancached_browser.WebViewActivity;
 import com.example.struct.Featuer;
+import com.example.struct.Item;
 import com.example.struct.PageItem;
+import com.example.struct.Seed;
 import com.example.struct.TrackLogItem;
 import android.util.Log;
 
@@ -37,17 +41,23 @@ public class CacheManager {
 	private final static HashMap<String, String> DOMAIN_MAP = new HashMap<String, String>();
 	private final static List<String> DOMAIN_TOPIC = new ArrayList<String>();
 	
-	private static final String MODEL_PATH = "sdcard/Ancached_Browser/data/model.dat";
+	private static final String MODEL_PATH = "sdcard/Ancached_Browser/data/model2.dat";
 	private static HashMap<String, Integer> model_sites = new HashMap<String, Integer>();
 	private static HashMap<String, Integer> model_types = new HashMap<String, Integer>();
 	private static final int MODEL_ROWS = 6;
 	private static final int TYPE_SIZE = 8;
-	private static final int MODEL_COLUMNS = 73;
+	private static final int MODEL_COLUMNS = MODEL_ROWS+1 + TYPE_SIZE*TYPE_SIZE*(TYPE_SIZE+1) + TYPE_SIZE;
 	private static double[][] model = new double[MODEL_ROWS][MODEL_COLUMNS];
 		
 	public static boolean mapStatus = true;
 	public static Map<String, PageItem> urlMap = new HashMap<String, PageItem>();
 	public static Map<String, List<PageItem>> topicMap = new HashMap<String, List<PageItem>>();
+	
+	private static Map<String, List<String>> sortedTopicMap = new HashMap<String, List<String>>();
+	
+	public final static double WEIGHT_THRESHOLD = 0.6;
+	private static final int ITEM_COUNT = 6;
+	private static final int PAGE_COUNT = 30;
 	
 	static {
 		SITESTITLE.put(SINA, "手机新浪网");SITESTITLE.put(IFENG, "手机凤凰网");SITESTITLE.put(SOHU, "搜狐网");
@@ -88,18 +98,41 @@ public class CacheManager {
 	 * @return 下一次可能访问的主题
 	 */
 	public static String getTopic(String url) {
-		// TODO Auto-generated method stub
-		int urlNum = urlTransform(url);
-		int site = urlNum / 9;
-		int topic = urlNum % 9;
-		int index = 0;
-		for (int i = topic*8+1, j = 0; j < 8; j++){
-			if (model[site][i+j] > model[site][i+index]){
-				index = j;
+		if (!url.contains(",")){
+			int index = urlTransform(url);
+			int i = index/9;
+			int j = index%9;
+			int start = MODEL_ROWS + j*TYPE_SIZE;
+			if (j != 1){
+				index = 1;
 			}
+			else {
+				index = 2;
+			}
+			for (int t = index; t <= TYPE_SIZE; t++){
+				if (model[i][start+t] > model[i][start+index] && t!=j){
+					index = t;
+				}
+			}
+			return DOMAIN_TOPIC.get(index-1);
 		}
-		String nextTopic = DOMAIN_TOPIC.get(index);
-		return nextTopic;
+		else if (url.split(",").length == 2){
+			String[] urls = url.split(",");
+			int s = urlTransform(urls[0]);
+			int t = urlTransform(urls[1]);
+			int i = s/9;
+			int start = MODEL_ROWS + TYPE_SIZE + s%9*TYPE_SIZE*TYPE_SIZE + (t%9-1)*TYPE_SIZE;
+			double tmp = 0;
+			int index = 1;
+			for (int k = 1; k <= TYPE_SIZE; k++){
+				if (model[i][start+k] > tmp && k!=t && k!=s){
+					tmp = model[i][start+k];
+					index = k;
+				}
+			}
+			return DOMAIN_TOPIC.get(index-1);
+		}
+		return "";
 	}
 	
 	/**
@@ -116,21 +149,88 @@ public class CacheManager {
 		return SITES.get(tmp);
 	}
 	
-	public static String getUrl(List<TrackLogItem> hitPages) {
+	public static List<String> getUrl(List<TrackLogItem> hitPages) {
 		// TODO Auto-generated method stub
 		TrackLogItem item = hitPages.get(hitPages.size()-1);
 		String url = item.getUrl();
 		String title = item.getTitle();
 		if (url.equals(HAO)){
-			return "";
+			return new ArrayList<String>();
 		}
 		else {
 			String topic = CacheManager.getTopic(url);
 			Log.i("nextUrl_topic", topic);
 			List<PageItem> items = CacheManager.topicMap.get(topic);
-			return getUrlInner(url, title, items);
+			return getUrlInner(url, title, topic, items);
 		}
 	}
+	
+	public static List<String> getUrl(List<String> realRouters, List<TrackLogItem> hitPages) {
+		// TODO Auto-generated method stub
+		TrackLogItem item = hitPages.get(hitPages.size()-1);
+		String url = item.getUrl();
+		String title = item.getTitle();
+		if (realRouters == null || realRouters.size() == 0){
+			return null;
+		}
+		else {
+			String topic;
+			if (realRouters.size() == 1){
+				if (realRouters.get(0).contains(HAO)){
+					return null;
+				}
+				topic = CacheManager.getTopic(realRouters.get(0));
+			}
+			else {
+				int index = realRouters.size() - 1;
+				if (realRouters.get(index).contains(HAO)){
+					return null;
+				}
+				String murl = realRouters.get(index - 1) + "," + realRouters.get(index);
+				topic = CacheManager.getTopic(murl);
+				try{
+					final String currentTopic = realRouters.get(index).split("-")[1];
+					if (sortedTopicMap.containsKey(currentTopic)){
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								// TODO Auto-generated method stub
+								List<String> seeds = sortedTopicMap.get(currentTopic);
+								for (int i = 0; i < seeds.size(); i++){
+									String address = seeds.get(i);
+									if (!CacheHelper.cachedList.containsKey(address) &&
+											!WebViewActivity.visitedUrls.contains(address)){
+										CacheHelper.getHTML(address);
+										break;
+									}
+								}
+							}
+						}).start();
+					}
+					else {
+						List<PageItem> items = CacheManager.topicMap.get(currentTopic);
+						List<String> nextUrls = getUrlInner(url, "", currentTopic, items);
+						for (int i = 0; i < nextUrls.size(); i++){
+							String address = nextUrls.get(i);
+							if (!WebViewActivity.visitedUrls.contains(address)){
+								CacheHelper.getHTML(address);
+								break;
+							}
+						}
+					}
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+			}
+			Log.i("nextUrl_topic", topic);
+			if (sortedTopicMap.containsKey(topic)){
+				return sortedTopicMap.get(topic);
+			}
+			List<PageItem> items = CacheManager.topicMap.get(topic);
+			return getUrlInner(url, title, topic, items);
+		}
+	}
+	
 	
 	/**
 	 * 
@@ -138,22 +238,44 @@ public class CacheManager {
 	 * @param items 链接集合
 	 * @return 接下来可能访问的链接
 	 */
-	public static String getUrlInner(String url, String title, List<PageItem> items) {
+	public static List<String> getUrlInner(String url, String title, String nexttopic, List<PageItem> items) {
 		String site, topic;
 		site = UtilMethods.checkSite(url);
-		topic = items.get(0).getType();
-		Prefetch.getNextUrls(site, topic, title, items);
-	
-//		if (items != null){
-//			String next_url =  items.get(0).getUrl();
-//			Log.i("next_title", items.get(0).getTitle());
-//			if (!next_url.contains("http://")){
-//				next_url = "http://" + next_url;
-//			}
-//			return next_url;
-//		}
-		String nextUrl = "";
-		return nextUrl;
+		if (url.contains("-")){
+			topic = url.split("-")[1] + "-";
+		}
+		else {
+			topic = "";
+		}
+		topic += nexttopic;
+		ArrayList<Item> mitems = new ArrayList<Item>();
+		for (int i = 0; i < items.size() && i < PAGE_COUNT; i++){
+			mitems.add(new Item(items.get(i).getUrl(), items.get(i).getTitle()));
+		}
+		Prefetch.getNextUrls(site, topic, title, mitems);
+		ArrayList<Seed> seeds = Prefetch.getFb().getSortList();	
+		try{
+			Log.i("result", seeds.get(0).getData().getDescription());
+		}catch (Exception e){
+			e.printStackTrace();
+		}	
+		List<String> nextUrls = new ArrayList<String>();
+		for (int i = 0, j = 0; i < seeds.size(); i++){
+			if (seeds.get(i).getData().getWeight() > WEIGHT_THRESHOLD || j < ITEM_COUNT){
+				nextUrls.add(seeds.get(i).getUrl());
+				j ++;
+			}
+		}
+		if (nextUrls.size() < ITEM_COUNT){
+			for (int i = 0, j = nextUrls.size(); i < mitems.size() && j < ITEM_COUNT; i++){
+				if (! nextUrls.contains(mitems.get(i).getUrl())){
+					nextUrls.add(mitems.get(i).getUrl());
+					j ++;
+				}
+			}
+		}
+		sortedTopicMap.put(topic, nextUrls);
+		return nextUrls;
 	}
 	
 	public static TrackLogItem checkItem(List<TrackLogItem> hitPages, TrackLogItem item) {
@@ -281,7 +403,9 @@ public class CacheManager {
 	}
 	
 	private static boolean compare(TrackLogItem item1, TrackLogItem item2){
-		if (item1.getUrl().equals(item2.getUrl()) || item1.getTitle().equals(item2.getTitle())){
+		String url1 = item1.getOriurl();
+		String url2 = item2.getOriurl();
+		if (url1.equals(url2) || item1.getTitle().equals(item2.getTitle())){
 			return true;
 		}
 		return false;
@@ -379,11 +503,13 @@ public class CacheManager {
 	
 	private static String modelTransform(double[][] model) {
 		// TODO Auto-generated method stub
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(4);
 		String mid_model = "";
 		for (int i = 0; i < MODEL_ROWS; i++){
 			for (int j = 0; j < MODEL_COLUMNS; j++){
-				mid_model += Double.toString(model[i][j]);
-				if (j == 0 || j%TYPE_SIZE == 0){
+				mid_model += nf.format(model[i][j]);
+				if (j == MODEL_ROWS || j%TYPE_SIZE == MODEL_ROWS){
 					mid_model += "\n";
 				}
 				else {
@@ -394,7 +520,7 @@ public class CacheManager {
 		}
 		return mid_model;
 	}
-	private static double[][] modelRecovery(String mid_model){
+	public static double[][] modelRecovery(String mid_model){
 		double[][] n_model = new double[MODEL_ROWS][MODEL_COLUMNS];
 		String[] rows = mid_model.split("\n");
 		for (int i = 0, s = 0, t = 0; i < rows.length; i++){
@@ -409,7 +535,7 @@ public class CacheManager {
 				}
 			}			
 		}
-		return model;
+		return n_model;
 	}
 
 	public static String parseUrl(String url, String title){

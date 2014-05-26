@@ -1,15 +1,18 @@
 package com.example.webservice;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.ksoap2.HeaderProperty;
 import org.ksoap2.SoapEnvelope;
+import org.ksoap2.SoapFault;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 import android.util.Log;
-
 import com.example.ancached_browser.MainActivity;
 import com.example.struct.TrackLogItem;
 
@@ -29,20 +32,30 @@ public class WebServiceManager {
 			rpc.addProperty((String)entry.getKey(), (String)entry.getValue());
 		}
 
-        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER10);
+		ArrayList<HeaderProperty> headerPropertyArrayList = new ArrayList<HeaderProperty>();
+		headerPropertyArrayList.add(new HeaderProperty("Connection", "close"));
+        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
         envelope.bodyOut = rpc;
         envelope.dotNet = true;
         envelope.setOutputSoapObject(rpc);  
   
-        HttpTransportSE transport = new HttpTransportSE(endPoint);  
+        HttpTransportSE transport = new HttpTransportSE(endPoint);
         try {  
-            transport.call(soapAction, envelope);  
+            transport.call(soapAction, envelope, headerPropertyArrayList);
         } catch (Exception e) {  
-            e.printStackTrace();  
+            e.printStackTrace();
+            webservice(cfg, args);
         }  
   
-        SoapObject object = (SoapObject) envelope.bodyIn;  
-        String result = object.getProperty(0).toString();  
+        String result = "";
+        if (envelope.bodyIn instanceof SoapFault) {
+        	result = ((SoapFault) envelope.bodyIn).faultstring;
+        } else {
+            SoapObject resultsRequestSOAP = (SoapObject) envelope.bodyIn;
+            result = String.valueOf(resultsRequestSOAP);
+        }
+//        Object object = (Object) envelope.bodyIn;  
+//        String result = ((SoapObject) object).getProperty(0).toString();
         Log.i("webservice_result", result);
 		return result;
 	}
@@ -89,7 +102,7 @@ public class WebServiceManager {
         Map<String, String> args = new HashMap<String, String>();
         String nameSpace = "http://ws.apache.org/axis2";  
         String methodName = "fenCiResult";  
-        String endPoint = "http://115.28.42.83:5000/axis2/services/fenci";  
+        String endPoint = "http://112.124.46.148:5001/axis2/services/fenci";
         String soapAction = "http://ws.apache.org/axis2/fenCiResult";  
 
         cfg.setNameSpace(nameSpace);
@@ -153,6 +166,11 @@ public class WebServiceManager {
         }
         args.put("logs", logs); 
 
+//        DBHelper dbHelper = new DBHelper();
+//        dbHelper.setUrl("http://112.124.46.148:5001/axis2/services/DBHelper?wsdl");
+//        dbHelper.pushLog(logs);
+        
+//        DBManager.pushLogs(logs);
         webservice(cfg, args);
 	}
 }

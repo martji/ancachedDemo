@@ -1,10 +1,7 @@
 package com.example.ancached_browser;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
-
 import com.ancached.params.Params;
 import com.ancached.prefetching.Prefetch;
 import com.ancached.prefetching.UtilMethods;
@@ -17,9 +14,6 @@ import com.example.model.CacheManager;
 import com.example.model.MyDBHelper;
 import com.example.service.MyService;
 import com.example.struct.Seed;
-import com.example.struct.TrackLogItem;
-import com.example.webservice.WebServiceManager;
-
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo.State;
 import android.os.Bundle;
@@ -41,6 +35,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
@@ -94,6 +89,8 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 		mTv = (TextView)findViewById(R.id.textview);
@@ -112,12 +109,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				Date curDate = new Date(System.currentTimeMillis());
-				
-				List<TrackLogItem> items = new ArrayList<TrackLogItem>();
-				items.add(new TrackLogItem());
-				WebServiceManager.pushLog(items);
-				
+				Date curDate = new Date(System.currentTimeMillis());			
 				Date endDate = new Date(System.currentTimeMillis());
 				long diff = endDate.getTime() - curDate.getTime();
 				Log.e("webservice_result", Long.toString(diff));
@@ -168,13 +160,14 @@ public class MainActivity extends Activity {
 						Prefetch.getFeedBack();
 						if (Prefetch.getFb().getSortList() != null) {
 							Iterator<Seed> iter = Prefetch.getFb().getSortList().iterator();
-							int count = 0;
-							while (iter.hasNext() && (count <= 5)) {
+							int count = 0;int cc = 0;
+							while (iter.hasNext() && (count <= 3) && cc < 5) {
 								Seed seed = iter.next();
 								Prefetch.getFetchedMap().put(seed.getUrl(),
 													seed.getData().getDescription());
 								Log.i("cached_url", seed.getUrl());
 								CacheHelper.getHTML(seed.getUrl());
+								cc ++;
 								if (Params.getNET_STATE() != 1)
 									count++;
 							}

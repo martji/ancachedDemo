@@ -8,5 +8,8 @@
     <string name="start">START</string>
     <string name="name">Ancached Browser</string>
     <string name="test">GetHTML</string>
+    <string name="del">清除缓存</string>
+    <string name="full">全屏显示</string>
+    <string name="unfull">退出全屏</string>
 
 </resources>

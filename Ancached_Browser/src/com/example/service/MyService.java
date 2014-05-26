@@ -44,6 +44,7 @@ public class MyService extends Service {
 				public void run() {
 					// TODO Auto-generated method stub
 					try{
+						//CacheHelper.writeBack();
 						List<TrackLogItem> items = WebViewActivity.getHitPages();
 						if (items.size() > 3){
 							WebServiceManager.pushLog(items);

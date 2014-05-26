@@ -54,18 +54,23 @@ public class HtmlHelper {
 	}
 	
 	private void getUrlSet(String data, String site){
-		String regEx = "<a([^<]*)>([^<]*)</a>"; 
+		String regEx = "<a([^<]*)><font color=\"red\">([^<]*)</font></a>|<a([^<]*)>([^<]*)</a>";
 		Pattern p = Pattern.compile(regEx); 
         Matcher m = p.matcher(data); 
         boolean result = m.find();
+        String type = "news";
         while(result) {
         	String url = m.group(1);
     		String title = m.group(2);
-        	if (title.length() > 5){
+        	if (url == null){
+        		url = m.group(3);
+        		title = m.group(4);
+        	}
+        	if (title.length() > 5 || DOMAIN_MAP.containsKey(title)){
         		if (site.equals(IFENG)){
 	        		url = url.substring(url.indexOf("\"")+1, url.lastIndexOf("\""));
 	        		if (url.startsWith("/")){
-	        			String type = url.substring(1,url.substring(1).indexOf("/")+1);
+	        			type = url.substring(1,url.substring(1).indexOf("/")+1);
 	        			url = url.replace("&amp;", "&");
 	        			url = IFENG + url;
 	        			PageItem pItem = new PageItem(url, title);
@@ -76,6 +81,7 @@ public class HtmlHelper {
 	        		}
         		}
         		else if (site.equals(SINA)){
+        			PageItem item = null;
         			if (url.contains("\"")){
         				url = url.substring(url.indexOf("\"")+1, url.lastIndexOf("\""));
         			}
@@ -84,15 +90,26 @@ public class HtmlHelper {
         			}
         			int tmp = url.indexOf(".sina");
         			if (tmp > 8){
-		        		String type = url.substring(7,tmp);
 		        		url = url.replace("&amp;", "&");
 		        		PageItem pItem = new PageItem(url, title);
-		        		pItem.setType(type);
 		        		CacheManager.urlMap.put(url, pItem);
-        				CacheManager.insertTopicMap(type, pItem);
-		        		Log.e("list", url + "\n" +title);
+		        		item = pItem;
         			}
-	        		
+        			//-----------\\
+        			Log.e("list", url + "\n" +type + title);
+        			if (DOMAIN_MAP.containsKey(title)){
+        				System.out.println();
+        				if (CacheManager.topicMap.containsKey("news")){
+        					type = DOMAIN_MAP.get(title);
+        				}
+        			}
+        			else if(!title.contains("[")) {
+	        			if (item != null && !item.getTitle().contains("½øÈë") 
+	        					&& item.getTitle().length() > 7){
+	        				item.setType(type);
+		        			CacheManager.insertTopicMap(type, item);
+	        			}
+        			}
         		}
         	}
         	result = m.find();

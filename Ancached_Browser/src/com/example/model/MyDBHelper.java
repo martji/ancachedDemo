@@ -118,7 +118,12 @@ public class MyDBHelper extends SQLiteOpenHelper {
 		cursor.close();
 		db.close();
 	}
-	
+	public void delUrlList(){
+		String sql = "delete from cachedlist";
+		File name = new File(SQL_NAME);
+		SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(name, null);
+		db.execSQL(sql);
+	}
 	
 	public void insertTable(TrackLogItem item) {
 		File name = new File(SQL_NAME);
