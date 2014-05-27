@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.util.EncodingUtils;
+
+import com.ancached.prefetching.MyPrefetch;
 import com.ancached.prefetching.Prefetch;
 import com.ancached.prefetching.UtilMethods;
 import com.example.ancached_browser.WebViewActivity;
@@ -223,7 +225,9 @@ public class CacheManager {
 				}
 			}
 			Log.i("nextUrl_topic", topic);
+			//all model trains were done here
 			if (sortedTopicMap.containsKey(topic)){
+				getUrlInner(url, title, topic, new ArrayList<PageItem>());
 				return sortedTopicMap.get(topic);
 			}
 			List<PageItem> items = CacheManager.topicMap.get(topic);
@@ -243,8 +247,7 @@ public class CacheManager {
 		site = UtilMethods.checkSite(url);
 		if (url.contains("-")){
 			topic = url.split("-")[1] + "-";
-		}
-		else {
+		}else {
 			topic = "";
 		}
 		topic += nexttopic;
@@ -252,8 +255,11 @@ public class CacheManager {
 		for (int i = 0; i < items.size() && i < PAGE_COUNT; i++){
 			mitems.add(new Item(items.get(i).getUrl(), items.get(i).getTitle()));
 		}
-		Prefetch.getNextUrls(site, topic, title, mitems);
-		ArrayList<Seed> seeds = Prefetch.getFb().getSortList();	
+				
+		MyPrefetch myPrefetch = new MyPrefetch(Prefetch.getPageType());
+		myPrefetch.getNextUrls(site, topic, title, mitems);
+		ArrayList<Seed> seeds = myPrefetch.getFb().getSortList();
+		
 		try{
 			Log.i("result", seeds.get(0).getData().getDescription());
 		}catch (Exception e){
@@ -274,7 +280,7 @@ public class CacheManager {
 				}
 			}
 		}
-		sortedTopicMap.put(topic, nextUrls);
+		sortedTopicMap.put(nexttopic, nextUrls);
 		return nextUrls;
 	}
 	

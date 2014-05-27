@@ -175,7 +175,7 @@ public class Prefetch {
 		Prefetch.launchTag = launchTag;
 	}
 
-	public int getPageType() {
+	public static int getPageType() {
 		return pageType;
 	}
 

@@ -51,15 +51,12 @@ public class CacheHelper {
 	private static final String CSS_DIR = "/sdcard/Ancached_Browser/css";// won't
 																			// be
 																			// deleted
-	private static final String MAP_ADR = RES_DIR + "/mapping.xml";
 	/*
 	 * private static int res_size = 0;// present number of res files private
 	 * static int css_size=0;//size of the css files
 	 */
 	private static final Semaphore semaphore = new Semaphore(1);// semaphore for
-																// the time;
-	private static final Semaphore semaphoreFile = new Semaphore(1);// semaphore
-																	// for the
+																// for the
 																	// file;
 
 	static {
@@ -164,42 +161,6 @@ public class CacheHelper {
 				}
 			}
 		}
-
-		// RES MAPPING(file and css)
-//		File mapXML = new File(MAP_ADR);
-//		if (!mapXML.exists()) {
-//			try {
-//				mapXML.createNewFile();
-//			} catch (IOException e1) {
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//			}
-//		}
-//		try {
-//			Document doc = Jsoup.parse(mapXML, "UTF-8",
-//					"http://www.oschina.net/");
-//			Elements eles = doc.body().children();
-//			for (Element ele : eles) {
-//				String url = ele.attr("url");
-//				String localaddress = ele.attr("localaddress");
-//				if (url != null){
-//					cachedList.put(url, localaddress);
-//					if(url.contains("file/"))
-//						urlList.put(localaddress, url);
-//				}
-//				if (localaddress.contains("unparsed")) {
-//					if (Params.getNET_STATE() == 1) {
-//						String ftpAddress = APP_PATH + "css";
-//						Thread dealWithCss = new Thread(new getCssRESThread(
-//								url, localaddress.replace(ftpAddress, CSS_DIR),
-//								localaddress));
-//						dealWithCss.start();
-//					}
-//				}
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
 	}
 	
 	public static String getUrl(String url) {
@@ -376,39 +337,6 @@ public class CacheHelper {
 		}
 		exec.shutdown();
 		reviseFile(htmlPath, null, null);
-	}
-
-	/*
-	 * write back to map PV
-	 */
-
-	public static void writeBack() {
-		try {
-			semaphoreFile.acquire();
-			File mapXML = new File(MAP_ADR);
-			Document doc = Jsoup.parse(mapXML, "UTF-8",
-					"http://www.oschina.net/");
-			Element root = doc.body();
-			root.empty();
-			Iterator<Entry<String, String>> iter = cachedList.entrySet()
-					.iterator();
-			while (iter.hasNext()) {
-				Entry<String, String> entry = iter.next();
-				Element ele = root.appendElement("res");
-				ele.attr("url", entry.getKey());
-				ele.attr("localaddress", entry.getValue());
-			}
-			OutputStreamWriter osw = new OutputStreamWriter(
-					new FileOutputStream(MAP_ADR, false), "UTF-8");
-			osw.write(doc.toString());
-			osw.flush();
-			osw.close();
-			semaphoreFile.release();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/*
