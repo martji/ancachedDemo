@@ -59,7 +59,7 @@ public class CacheManager {
 	
 	public final static double WEIGHT_THRESHOLD = 0.6;
 	private static final int ITEM_COUNT = 6;
-	private static final int PAGE_COUNT = 30;
+	private static final int PAGE_COUNT = 22;
 	
 	static {
 		SITESTITLE.put(SINA, "手机新浪网");SITESTITLE.put(IFENG, "手机凤凰网");SITESTITLE.put(SOHU, "搜狐网");
@@ -202,6 +202,7 @@ public class CacheManager {
 									String address = seeds.get(i);
 									if (!CacheHelper.cachedList.containsKey(address) &&
 											!WebViewActivity.visitedUrls.contains(address)){
+										Log.i("next_title",address);
 										CacheHelper.getHTML(address);
 										break;
 									}
@@ -211,12 +212,15 @@ public class CacheManager {
 					}
 					else {
 						List<PageItem> items = CacheManager.topicMap.get(currentTopic);
-						List<String> nextUrls = getUrlInner(url, "", currentTopic, items);
-						for (int i = 0; i < nextUrls.size(); i++){
-							String address = nextUrls.get(i);
-							if (!WebViewActivity.visitedUrls.contains(address)){
-								CacheHelper.getHTML(address);
-								break;
+						if (items != null && items.size() > 0){
+							List<String> nextUrls = getUrlInner(url, "", currentTopic, items);
+							for (int i = 0; i < nextUrls.size(); i++){
+								String address = nextUrls.get(i);
+								if (!WebViewActivity.visitedUrls.contains(address)){
+									Log.i("next_title",address);
+									CacheHelper.getHTML(address);
+									break;
+								}
 							}
 						}
 					}
@@ -246,16 +250,23 @@ public class CacheManager {
 		String site, topic;
 		site = UtilMethods.checkSite(url);
 		if (url.contains("-")){
-			topic = url.split("-")[1] + "-";
+			topic = url.split("-")[1];
+			if (!DOMAIN_TOPIC.contains(topic)){
+				topic = "others";
+			}
+			topic += "-";
 		}else {
 			topic = "";
 		}
 		topic += nexttopic;
 		ArrayList<Item> mitems = new ArrayList<Item>();
-		for (int i = 0; i < items.size() && i < PAGE_COUNT; i++){
-			mitems.add(new Item(items.get(i).getUrl(), items.get(i).getTitle()));
+		for (int i = 0, j = 0; i < items.size() && j < PAGE_COUNT; i++){
+			if (!(items.get(i).getUrl().length() > 100 || items.get(i).getTitle().length() < 5)){
+				mitems.add(new Item(items.get(i).getUrl(), items.get(i).getTitle()));
+				j ++;
+			}
 		}
-				
+		Log.i("current_title", title);
 		MyPrefetch myPrefetch = new MyPrefetch(Prefetch.getPageType());
 		myPrefetch.getNextUrls(site, topic, title, mitems);
 		ArrayList<Seed> seeds = myPrefetch.getFb().getSortList();

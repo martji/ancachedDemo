@@ -55,6 +55,7 @@ public class MyPrefetch {
 		getFeedBack(items);
 	}
 	
+	@SuppressWarnings({ })
 	public void getFeedBack(ArrayList<Item> items) {
 		// TODO Auto-generated method stub
 		String result = "";
@@ -63,9 +64,11 @@ public class MyPrefetch {
 		try {
 			String itemstr = "";
 			for (int i = 0; i < items.size(); i++){
-				itemstr += items.get(i).getUrl() + " " + items.get(i).getValue();
+				itemstr += items.get(i).getUrl() + " " + items.get(i).getValue().replace("%", "°Ù·ÖºÅ");
 				itemstr += i != items.size() - 1?"\n":"";
 			}
+//			String nitemstr = new Base64().encode(itemstr.getBytes());
+//			String mitemstr = new String(new Base64().decode(nitemstr));
 			String EncodedURL=
 					"http://112.124.46.148:5001/axis2/services/prediction/slruFromPhone?deviceId="
 							+ this.deviceId + "&&url=" + this.url 

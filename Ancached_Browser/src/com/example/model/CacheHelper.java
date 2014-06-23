@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -27,20 +28,16 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import com.ancached.params.Params;
 import com.ancached.prefetching.Prefetch;
-
 import android.os.Environment;
 import android.util.Log;
 
 public class CacheHelper {
-	public static Map<String, String> cachedList = new HashMap<String, String>();
+	public static Map<String, String> cachedList = new ConcurrentHashMap<String, String>();
 	public static Map<String, String> urlList = new HashMap<String, String>();
 	public static Map<String, String> localsite = new HashMap<String, String>();
-	public static Map<String, String> prefix = new HashMap<String, String>();// prefix
-																				// for
-																				// sohu...
+	public static Map<String, String> prefix = new HashMap<String, String>();// prefix for sohu...
 
 	public static String APP_PATH = "file:///"
 			+ Environment.getExternalStorageDirectory().getPath()
@@ -48,16 +45,12 @@ public class CacheHelper {
 
 	private static final String PAGE_DIR = "/sdcard/Ancached_Browser/file";
 	private static final String RES_DIR = "/sdcard/Ancached_Browser/res";
-	private static final String CSS_DIR = "/sdcard/Ancached_Browser/css";// won't
-																			// be
-																			// deleted
+	private static final String CSS_DIR = "/sdcard/Ancached_Browser/css";// won't be deleted
 	/*
 	 * private static int res_size = 0;// present number of res files private
 	 * static int css_size=0;//size of the css files
 	 */
-	private static final Semaphore semaphore = new Semaphore(1);// semaphore for
-																// for the
-																	// file;
+	private static final Semaphore semaphore = new Semaphore(1);// semaphore for for the file;
 
 	static {
 		urlList.put("homesites.htm", "http://m.hao123.com");
@@ -111,6 +104,7 @@ public class CacheHelper {
 					Log.d("fileName", fileName);
 					if (urlList.containsKey(fileName)) {
 						cachedList.put(urlList.get(fileName), fileName);
+						//MyDBHelper.insertCachedTable(fileName, urlList.get(fileName));
 					}
 				}
 			}
@@ -122,7 +116,6 @@ public class CacheHelper {
 	 */
 
 	public static void initRes() {
-		// TODO delete the unused resource(periodly?)
 		// RES DIR
 		File fileDir = new File(RES_DIR);
 		if (!fileDir.exists()){
@@ -134,6 +127,7 @@ public class CacheHelper {
 				String fileName = APP_PATH + "res/" + file.getName();
 				if (urlList.containsKey(fileName)) {
 					cachedList.put(urlList.get(fileName), fileName);
+					//MyDBHelper.insertCachedTable(fileName, urlList.get(fileName));
 				}
 			}
 		}
@@ -142,21 +136,23 @@ public class CacheHelper {
 		if (!cssDir.exists()){
 			cssDir.mkdir();
 		}
-		files = fileDir.listFiles();
+		files = cssDir.listFiles();
 		if (files != null) {
+			int count = 0;
 			for (File file : files) {
 				String fileName = APP_PATH + "css/" + file.getName();
 				if (urlList.containsKey(fileName)) {
 					cachedList.put(urlList.get(fileName), fileName);
+					//MyDBHelper.insertCachedTable(fileName, urlList.get(fileName));
 				}
 				if (fileName.contains("unparsed")) {
-					if (Params.getNET_STATE() == 1) {
+					if (Params.getNET_STATE() == 1 && count < 1) {
 						String ftpAddress = APP_PATH + "css";
 						String url = urlList.get(fileName);
-						Thread dealWithCss = new Thread(new getCssRESThread(
-								url, fileName.replace(ftpAddress, CSS_DIR),
-								fileName));
+						Thread dealWithCss = new Thread(new getCssRESThread(url, 
+								fileName.replace(ftpAddress, CSS_DIR), fileName));
 						dealWithCss.start();
+						count ++;
 					}
 				}
 			}
@@ -233,8 +229,7 @@ public class CacheHelper {
 	/**
 	 * some srcs are in hrefs, use checkCssJsPic to separate them
 	 * 
-	 * @param url
-	 *            the url
+	 * @param url the url
 	 */
 
 	private static boolean containsCssJsPic(String url) {
@@ -345,12 +340,10 @@ public class CacheHelper {
 
 	public static class getResThread implements Runnable {
 		String url = "";
-		// Element root;
 		int tag = 0;// tag=1 means css res
 
 		public getResThread(String Address, int cssTag) {
 			this.url = Address;
-			// this.root = tmpEle;
 			this.tag = cssTag;
 		}
 
@@ -361,7 +354,7 @@ public class CacheHelper {
 				URL urlAddr = new URL(url);
 				HttpURLConnection connection = (HttpURLConnection) urlAddr
 						.openConnection();
-				connection.setConnectTimeout(100);
+				connection.setConnectTimeout(200);
 				InputStream inStream = connection.getInputStream();
 
 				// Semaphore
@@ -378,10 +371,8 @@ public class CacheHelper {
 						ftpAddress = APP_PATH + "css/" + time + "." + type;
 					}
 				} else {
-					absoluteAddress = CSS_DIR + "/" + time + "_unparsed" + "."
-							+ type;
-					ftpAddress = APP_PATH + "css/" + time + "_unparsed" + "."
-							+ type;
+					absoluteAddress = CSS_DIR + "/" + time + "_unparsed" + "." + type;
+					ftpAddress = APP_PATH + "css/" + time + "_unparsed" + "." + type;
 				}
 				semaphore.release();
 
@@ -400,11 +391,6 @@ public class CacheHelper {
 				fout.close();
 				cachedList.put(url, ftpAddress);
 				MyDBHelper.insertCachedTable(ftpAddress, url);
-				/*
-				 * Element tmpItem = root.appendElement("res");
-				 * tmpItem.attr("url", url); tmpItem.attr("localaddress",
-				 * absoluteAddress);
-				 */
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -431,8 +417,8 @@ public class CacheHelper {
 			}
 			line = buffer.toString();
 			br.close();
-			Iterator<Entry<String, String>> iter = cachedList.entrySet()
-					.iterator();
+			Map<String, String> localCachedlist = cachedList;
+			Iterator<Entry<String, String>> iter = localCachedlist.entrySet().iterator();
 			while (iter.hasNext()) {
 				Entry<String, String> entry = iter.next();
 				String key = entry.getKey();
@@ -450,6 +436,7 @@ public class CacheHelper {
 				localAddress = localAddress.replace("unparsed", "parsed");
 				ftpAddress = ftpAddress.replace("unparsed", "parsed");
 				cachedList.put(originURL, ftpAddress);
+				MyDBHelper.insertCachedTable(ftpAddress, originURL);
 				File deleteFile = new File(deleteAddress);
 				deleteFile.delete();
 			}
@@ -557,11 +544,6 @@ public class CacheHelper {
 				}
 			}
 		} catch (Exception e) {
-			// Delete the file if it isn't downloaded successfully
-			/*
-			 * cachedList.remove(address); File file = new File(deleteFile);
-			 * file.delete();
-			 */
 			e.printStackTrace();
 		}
 	}

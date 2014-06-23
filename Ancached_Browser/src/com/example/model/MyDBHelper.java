@@ -98,6 +98,9 @@ public class MyDBHelper extends SQLiteOpenHelper {
 	public static void insertCachedTable(String ftpaddress, String address){
     	File name = new File(SQL_NAME);
     	SQLiteDatabase db = SQLiteDatabase.openOrCreateDatabase(name, null);
+    	String sql0 = "delete from cachedlist where address = ?";
+    	Object[] args0 = new Object[]{address};
+    	db.execSQL(sql0, args0);
 		String sql = "insert into cachedlist values(?,?)";
 		Object[] args = new Object[]{ftpaddress, address};
 		db.execSQL(sql, args);
@@ -117,6 +120,7 @@ public class MyDBHelper extends SQLiteOpenHelper {
 		}
 		cursor.close();
 		db.close();
+		//delUrlList();
 	}
 	public void delUrlList(){
 		String sql = "delete from cachedlist";

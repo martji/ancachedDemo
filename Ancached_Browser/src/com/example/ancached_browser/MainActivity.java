@@ -66,7 +66,6 @@ public class MainActivity extends Activity {
 
 	// Monitor the network
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			// TODO Auto-generated method stub
@@ -161,10 +160,9 @@ public class MainActivity extends Activity {
 						if (Prefetch.getFb().getSortList() != null) {
 							Iterator<Seed> iter = Prefetch.getFb().getSortList().iterator();
 							int count = 0;int cc = 0;
-							while (iter.hasNext() && (count <= 3) && cc < 5) {
+							while (iter.hasNext() && count <= 3 && cc < 5) {
 								Seed seed = iter.next();
-								Prefetch.getFetchedMap().put(seed.getUrl(),
-													seed.getData().getDescription());
+								Prefetch.getFetchedMap().put(seed.getUrl(), seed.getData().getDescription());
 								Log.i("cached_url", seed.getUrl());
 								CacheHelper.getHTML(seed.getUrl());
 								cc ++;
@@ -221,6 +219,7 @@ public class MainActivity extends Activity {
 			.setPositiveButton("È·¶¨", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
+					unregisterReceiver(mReceiver);
 					myBinder.saveLogs();
 					try {
 						Thread.sleep(1000);
