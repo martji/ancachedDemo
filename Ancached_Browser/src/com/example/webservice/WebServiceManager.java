@@ -165,12 +165,8 @@ public class WebServiceManager {
         	logs += i!=items.size()-1?"\n":"";
         }
         args.put("logs", logs); 
-
-//        DBHelper dbHelper = new DBHelper();
-//        dbHelper.setUrl("http://112.124.46.148:5001/axis2/services/DBHelper?wsdl");
-//        dbHelper.pushLog(logs);
         
-//        DBManager.pushLogs(logs);
+//      DBManager.pushLogs(logs);
         webservice(cfg, args);
 	}
 }

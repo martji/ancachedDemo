@@ -7,7 +7,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -16,10 +15,8 @@ import org.jsoup.select.Elements;
 import android.util.Log;
 import com.alibaba.fastjson.JSON;
 import com.example.struct.FeedBack;
-import com.example.struct.Item;
 
 public class Prefetch {
-	// params
 	static String deviceId = "";
 	static String url = "";
 	static String site = "";
@@ -39,70 +36,21 @@ public class Prefetch {
 		Prefetch.fetchedMap = fetchedMap;
 	}
 
-	public static void getNextUrls(String site, String topic, String title,
-			 ArrayList<Item> items){
-		Prefetch.site = site;
-		Prefetch.topic = topic;
-		Prefetch.description = title;
-		Prefetch.getFeedBack(items);
-	}
-	
-	private static void getFeedBack(ArrayList<Item> items) {
-		// TODO Auto-generated method stub
-		String result = "";
-		URL urlCon;
-		//encode Chinese with URLEncoder
-		try {
-			Prefetch.time=System.currentTimeMillis();
-			String itemstr = "";
-			for (int i = 0; i < items.size(); i++){
-				itemstr += items.get(i).getUrl() + " " + items.get(i).getValue();
-				itemstr += i != items.size() - 1?"\n":"";
-			}
-			String EncodedURL=
-					"http://112.124.46.148:5001/axis2/services/prediction/slruFromPhone?deviceId="
-							+ deviceId + "&&url=" + url 
-							+ "&&items=" + URLEncoder.encode(itemstr, "UTF-8")
-							+ "&&site=" + URLEncoder.encode(site, "UTF-8")
-							+ "&&topic=" + topic 
-							+ "&&description=" + URLEncoder.encode(description, "UTF-8") 
-							+ "&&launchTag=" + launchTag
-							+ "&&pageType=" + pageType + "&&time=" + time;
-			urlCon = new URL(EncodedURL);
-			HttpURLConnection urlConnection=(HttpURLConnection)urlCon.openConnection();
-			urlConnection.setRequestProperty("contentType", "UTF-8");
-			BufferedReader bin = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
-			String temp = "";
-			while ((temp = bin.readLine()) != null) {
-				result += temp;
-			}
-			Document doc =Jsoup.parse(result);
-			Element ele=doc.body();
-			Elements eles=ele.children();
-			Element resultNode=eles.first();
-			result=resultNode.text();
-			Prefetch.launchTag = 0;
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		if(result!="")
-			Prefetch.fb = JSON.parseObject(result,FeedBack.class);
-	}
-
 	public static void getFeedBack() {
 		String result = "";
 		URL urlCon;
-		//encode Chinese with URLEncoder
 		try {
 			Prefetch.time=System.currentTimeMillis();
 			String EncodedURL=
-					"http://112.124.46.148:5001/axis2/services/prediction/slru?deviceId="
-							+ deviceId + "&&url=" + url + "&&site=" + URLEncoder.encode(site, "UTF-8")
-							+ "&&topic=" + topic + "&&description="
-							+ URLEncoder.encode(description, "UTF-8") + "&&launchTag=" + launchTag
-							+ "&&pageType=" + pageType + "&&time=" + time;
+					"http://112.124.46.148:5001/axis2/services/prediction/slru?"
+							+"deviceId=" + deviceId 
+							+ "&&url=" + url 
+							+ "&&site=" + URLEncoder.encode(site, "UTF-8")
+							+ "&&topic=" + topic 
+							+ "&&description=" + URLEncoder.encode(description, "UTF-8")
+							+ "&&launchTag=" + launchTag
+							+ "&&pageType=" + pageType 
+							+ "&&time=" + time;
 			urlCon = new URL(EncodedURL);
 			HttpURLConnection urlConnection=(HttpURLConnection)urlCon.openConnection();
 			urlConnection.setRequestProperty("contentType", "UTF-8");

@@ -5,10 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import android.util.Log;
 
 import com.example.struct.PageItem;
-
-import android.util.Log;
 
 public class HtmlHelper {
 
@@ -20,6 +19,8 @@ public class HtmlHelper {
 	private static String SINA = "sina.cn";
 	private static String IFENG = "i.ifeng.com";
 	private static String TECENT = "info.3g.qq.com";
+	
+	public static HashMap<String, String> structMap = new HashMap<String, String>();
 	
 	static {
 		DOMAIN_MAP.put("新闻", "news");
@@ -36,242 +37,65 @@ public class HtmlHelper {
 		TOPIC.add("ent");TOPIC.add("mil");TOPIC.add("auto");TOPIC.add("others");
 	}
 	
-	public static void parse(String url, String data) {
+	public static void parse(String address, String data) {
 		// TODO Auto-generated method stub
-		HtmlHelper htmlHelper = new HtmlHelper();
-		if (url.equals(SOHU)){
-			htmlHelper.getUrlSetSOHU(data);
+		if (!structMap.containsKey(address)){
+			return;
 		}
-		else if (url.equals(YI163)){
-			htmlHelper.getUrlSet163(data);
-		}
-		else if (url.equals(TECENT)){
-			htmlHelper.getUrlSetTencent(data);
-		}
-		else {
-			htmlHelper.getUrlSet(data, url);
-		}
-	}
-	
-	private void getUrlSet(String data, String site){
-		String regEx = "<a([^<]*)><font color=\"red\">([^<]*)</font></a>|<a([^<]*)>([^<]*)</a>";
-		Pattern p = Pattern.compile(regEx); 
-        Matcher m = p.matcher(data); 
+		String regEx = structMap.get(address);
+		int regSize = regEx.split("|").length;
+		Pattern p = Pattern.compile(regEx);
+        Matcher m = p.matcher(data);
         boolean result = m.find();
-        String type = "news";
+        String topic = "top";
         while(result) {
         	String url = m.group(1);
     		String title = m.group(2);
-        	if (url == null){
-        		url = m.group(3);
-        		title = m.group(4);
-        	}
-        	if (title.length() > 5 || DOMAIN_MAP.containsKey(title)){
-        		if (site.equals(IFENG)){
-	        		url = url.substring(url.indexOf("\"")+1, url.lastIndexOf("\""));
-	        		if (url.startsWith("/")){
-	        			type = url.substring(1,url.substring(1).indexOf("/")+1);
-	        			url = url.replace("&amp;", "&");
-	        			url = IFENG + url;
-	        			PageItem pItem = new PageItem(url, title);
-	        			pItem.setType(type);
-	        			CacheManager.urlMap.put(url, pItem);
-        				CacheManager.insertTopicMap(type, pItem);
-	        			Log.e("list", url + "\n" +title);
-	        		}
-        		}
-        		else if (site.equals(SINA)){
-        			PageItem item = null;
-        			if (url.contains("\"")){
-        				url = url.substring(url.indexOf("\"")+1, url.lastIndexOf("\""));
-        			}
-        			else {
-        				url = url.substring(url.indexOf("'")+1, url.lastIndexOf("'"));
-        			}
-        			int tmp = url.indexOf(".sina");
-        			if (tmp > 8){
-		        		url = url.replace("&amp;", "&");
-		        		PageItem pItem = new PageItem(url, title);
-		        		CacheManager.urlMap.put(url, pItem);
-		        		item = pItem;
-        			}
-        			//-----------\\
-        			Log.e("list", url + "\n" +type + title);
-        			if (DOMAIN_MAP.containsKey(title)){
-        				System.out.println();
-        				if (CacheManager.topicMap.containsKey("news")){
-        					type = DOMAIN_MAP.get(title);
-        				}
-        			}
-        			else if(!title.contains("[")) {
-	        			if (item != null && !item.getTitle().contains("进入") 
-	        					&& item.getTitle().length() > 7){
-	        				item.setType(type);
-		        			CacheManager.insertTopicMap(type, item);
-	        			}
-        			}
-        		}
-        	}
-        	result = m.find();
-        }
-	}
-	
-	private void getUrlSetTencent(String data){
-		String regEx = "<a([^<]*) class=[^<]*>([^<]*)<span class=[^<]*>[^<]*</span></a>|<a([^<]*)>([^<]*)</a>";
-		Pattern p = Pattern.compile(regEx); 
-        Matcher m = p.matcher(data); 
-        boolean result = m.find();
-        while(result) {
-        	String url = m.group(1);
-    		String title = m.group(2);
-        	if (url == null){
-        		url = m.group(3);
-        		title = m.group(4);
-        	}
-        	if (title.length() > 5){
-        		url = url.substring(url.indexOf("\"")+1, url.lastIndexOf("\""));
-        		if (url.contains("aid")){
-	        		String type = url.substring(url.indexOf("aid=")).
-	        				substring(4, url.substring(url.indexOf("aid=")).indexOf("&"));
-	        		if (type.contains("_")){
-	        			type = type.substring(0, type.indexOf("_"));
-	        			if (type.equals("mobile")){
-	        				type = "tech";
-	        			}
-	        			if (type.equals("stock")){
-	        				type = "finance";
-	        			}
-	        		}
-	        		if (TOPIC.contains(type)){
-	        			url = url.replace("&amp;", "&");
-	        			url = url.replaceAll("sid=[^&]*&*", "");
-		        		PageItem pItem = new PageItem(url, title);
-		        		pItem.setType(type);
-		        		CacheManager.urlMap.put(url, pItem);
-        				CacheManager.insertTopicMap(type, pItem);
-		        		Log.e("list", url + "\n" +title);
-	        		}
-        		}
-        	}
-        	result = m.find();
-        }
-	}
-	
-	private void getUrlSetSOHU(String data) {
-		// TODO Auto-generated method stub
-		String regEx = "<a([^<]*) class=[^<]*>[^<]*<i[^<]*><img[^<]*></i>[^<]*<p[^<]*>([^<]*)</p>[^<]*</a>|" +
-				"<a([^<]*) class=[^<]*><span[^<]*>([^<]*)</span></a>|" +
-				"<a([^<]*)><b>([^<]*)</b></a>|" +
-				"<a([^<]*)>([^<]*)</a>";
-		Pattern p = Pattern.compile(regEx); 
-        Matcher m = p.matcher(data); 
-        boolean result = m.find();
-        List<PageItem> pageItems = new ArrayList<PageItem>();
-        while(result) {
-        	String url = m.group(1);
-    		String title = m.group(2);
-        	if (url == null){
-        		url = m.group(3);
-        		title = m.group(4);
-        	}
-        	else {
-        		Log.e("list", url);
-        	}
-        	if (url == null){
-        		url = m.group(5);
-        		title = m.group(6);
-        	}
-        	if (url == null){
-        		url = m.group(7);
-        		title = m.group(8);
-        	}
-        	if (title.length() > 5){
-        		if (title.startsWith("进入")){
-        			String type = title.substring(2, 4);
-        			if (DOMAIN_MAP.containsKey(type)){
-        				type = DOMAIN_MAP.get(type);
-	        			for (int i = 0; i < pageItems.size(); i++){
-	        				PageItem item = pageItems.get(i);
-	        				item.setType(type);
-	        				CacheManager.urlMap.put(item.getUrl(), item);
-	        				CacheManager.insertTopicMap(type, item);
-	        				Log.e("list", item.getUrl() + "\n" + item.getTitle());
-	        			}
-        			}
-        			pageItems = new ArrayList<PageItem>();
-        		}
-        		else {
-        			if (url.contains("\" class")){
-	        			url = url.substring(url.indexOf("\"")+1, url.indexOf("\" class"));
-        			}
-        			else {
-        				url = url.substring(url.indexOf("\"")+1, url.lastIndexOf("\""));
-        			}
-        			if (!url.contains("http")){
-        				url = url.replace("&amp;", "&");
-        				url = SOHU + url;
-	        			pageItems.add(new PageItem(url, title));
-        			}
-        		}   		
-        	}
-            result = m.find();
-        }
-	}
-	
-	private void getUrlSet163(String data){
-		String regEx = "<a.*href='(.*)'.*>(.*)</a>";
-		regEx = "<p class=[^<]*>([^<]*)</p>";
-		Pattern p0 = Pattern.compile(regEx); 
-        Matcher m0 = p0.matcher(data);
-        boolean result0 = m0.find();
-        List<String> titleList = new ArrayList<String>();
-        while(result0) {
-        	titleList.add(m0.group(1));
-        	result0 = m0.find();
-        }	
-		
-		regEx = "<a([^<]*)><img[^<]*>([^<]*)</a>|<a([^<]*)>([^<]*)</a>";
-		Pattern p = Pattern.compile(regEx); 
-        Matcher m = p.matcher(data); 
-        boolean result = m.find();
-        int index = 0;
-        List<PageItem> pageItems = new ArrayList<PageItem>();
-        while(result) {
-        	String url = m.group(1);
-    		String title = m.group(2);
-        	if (url == null){
-        		url = m.group(3);
-        		title = m.group(4);
-        		url += "++++";
-        	}
-        	else if (url.contains("3g.163.com")){
-        		title = titleList.get(index++);
+    		if (url != null){
+    			topic = DOMAIN_MAP.containsKey(title) ? DOMAIN_MAP.get(title) : "others";
+    		}
+    		else {
+    			for (int i = 1; i < regSize && url == null; i++){
+    				url = m.group(2*i + 1);
+    				title = m.group(2*i + 2);
+    			}
+    		}
+    		url = url.substring(url.indexOf("href"));
+    		Log.i("url", url);
+    		url = url.replace("&amp;", "&");
+    		if (url.contains("\" ")){
+    			url = url.substring(url.indexOf("\"")+1, url.indexOf("\" "));
+    		} else if (url.contains("\"")){
+    			int start = url.indexOf("\"") + 1;
+    			url = url.substring(start, url.length()-1);
 			}
-        	
-        	if (url.contains("3g.163.com") && !url.contains("3g.163.com/links") 
-        			&& (title.length()==0 ||title.length() > 5)){
-        		if (url.startsWith(" href")){
-        			url = url.substring(7,url.lastIndexOf("\""));
-        			url = url.replace("&amp;", "&");
-        			PageItem item = new PageItem(url, title);
-        			pageItems.add(item);
+    		if (address.equals(SINA)){
+    			if (url.contains("'")){
+    				url = url.substring(url.indexOf("'")+1, 
+    						url.substring(url.indexOf("'")+1).indexOf("'"));
+    			}
+    		} else if (address.equals(SOHU)){
+    			if (!url.contains("http")){
+    				url = SOHU + url;
+    			}
+    		} else if (address.equals(TECENT)){
+    			
+    		} else if (address.equals(IFENG)){
+        		if (url.startsWith("/")){
+        			url = IFENG + url;
         		}
-        		if (title.contains("频道")){
-        			String type = title.substring(2,4);
-        			if (DOMAIN_MAP.containsKey(type)){
-        				type = DOMAIN_MAP.get(type);
-        				for (int i = 0; i < pageItems.size(); i++){
-        					PageItem item = pageItems.get(i);
-        					item.setType(type);
-        					CacheManager.urlMap.put(item.getUrl(), item);
-	        				CacheManager.insertTopicMap(type, item);
-        					Log.e("list", item.getUrl() + "\n" + item.getTitle());
-        				}
-        			}
-        			pageItems = new ArrayList<PageItem>();
-            	}
-        	}  	
-        	result = m.find();
+    		} else if (address.equals(YI163)){
+    			
+    		}
+    		Log.i("url", url);
+    		PageItem pItem = new PageItem(url, title);
+			pItem.setType(address + "-" + topic);
+			CacheManager.urlMap.put(url, pItem);
+    		if (title.length() >= 5 && url.length() < 200){
+        		System.out.println(topic + " -- " + url + " -- " + title);
+				CacheManager.insertTopicMap(topic, pItem);
+    		}
+    		result = m.find();
         }
 	}
 }
