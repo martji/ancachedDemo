@@ -155,6 +155,7 @@ public class WebViewActivity extends Activity {
 				}
 				siteUrl = CacheManager.checkUrl(url, view.getTitle());
 				boolean flag = hitPages.get(hitPages.size() - 2).getUrl().contains("hao123");
+<<<<<<< HEAD
 				if (siteUrl != null && flag) {
 					CacheManager.current_site = siteUrl;
 					realRouters = new ArrayList<String>();
@@ -180,6 +181,30 @@ public class WebViewActivity extends Activity {
 							}
 						}).start();
 					}
+=======
+				if (siteUrl != null && flag && !visitedSites.contains(siteUrl)) {
+					visitedSites.add(siteUrl);
+					realRouters = new ArrayList<String>();
+					realRouters.add(siteUrl);
+					Prefetch.setUrl("http://" + siteUrl);
+					CacheManager.mapStatus = false;
+					view.loadUrl("javascript:window.handler.show(document."
+							+ "getElementsByTagName('html')[0].innerHTML);");
+					while (!CacheManager.mapStatus) {
+						try {
+							Thread.sleep(100);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							Prefetch.setPageType(0);
+							prefetchPages();
+						}
+					}).start();
+>>>>>>> 2293b6cdc41c4053e98e9f26ca54202c4b12ff1e
 				}
 			}
 		});
