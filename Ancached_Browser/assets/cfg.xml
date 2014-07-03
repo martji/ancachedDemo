@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<sites>
+    <site>
+        <name>SINA</name>
+        <url>sina.cn</url>
+        <title>手机新浪网</title>
+        <num>0</num>
+        <struct>&lt;h3&gt;&lt;a([^&lt;]*)&gt;([^&lt;]*)&lt;/a&gt;&lt;/h3&gt;|&lt;a([^&lt;]*)&gt;([^&lt;]*)&lt;/a&gt;</struct>
+    </site>
+    <site>
+        <name>SOHU</name>
+        <url>m.sohu.com</url>
+        <title>手机搜狐网</title>
+        <num>2</num>
+        <struct>&lt;em&gt;&lt;a([^&lt;]*)&gt;([^&lt;]*)&lt;/a&gt;|&lt;a([^&lt;]*)&gt;&lt;strong&gt;([^&lt;]*)&lt;/strong&gt;&lt;/a&gt;|&lt;a([^&lt;]*) class=[^&lt;]*&gt; &lt;i[^&lt;]*&gt;&lt;img[^&lt;]*&gt;&lt;/i&gt; &lt;p[^&lt;]*&gt;([^&lt;]*)&lt;/p&gt; &lt;/a&gt;|&lt;a([^&lt;]*) class=[^&lt;]*&gt;&lt;span[^&lt;]*&gt;([^&lt;]*)&lt;/span&gt;&lt;/a&gt;|&lt;a([^&lt;]*)&gt;&lt;b&gt;([^&lt;]*)&lt;/b&gt;&lt;/a&gt;|&lt;a([^&lt;]*)&gt;([^&lt;]*)&lt;/a&gt;</struct>
+    </site>
+    <site>
+        <name>TECENT</name>
+        <url>info.3g.qq.com</url>
+        <title>手机腾讯网</title>
+        <num>3</num>
+        <struct>&lt;h3&gt;&lt;a([^&lt;]*)&gt;([^&lt;]*)&lt;/a&gt;&lt;/h3&gt;|&lt;a([^&lt;]*) class=[^&lt;]*&gt;([^&lt;]*)&lt;span class=[^&lt;]*&gt;[^&lt;]*&lt;/span&gt;&lt;/a&gt;|&lt;a([^&lt;]*)&gt;([^&lt;]*)&lt;/a&gt;</struct>
+    </site>
+    <site>
+        <name>WANGYI</name>
+        <url>3g.163.com/touch</url>
+        <title>手机网易网</title>
+        <num>4</num>
+        <struct></struct>
+    </site>
+    <site>
+        <name>IFENG</name>
+        <url>i.ifeng.com</url>
+        <title>手机凤凰网</title>
+        <num>1</num>
+        <struct></struct>
+    </site>
+</sites>
+<topics>
+    <topic>
+        <name>news</name>
+        <title>新闻</title>
+        <num>1</num>
+    </topic>
+    <topic>
+        <name>sports</name>
+        <title>体育</title>
+        <num>2</num>
+    </topic>
+    <topic>
+        <name>finance</name>
+        <title>财经</title>
+        <num>3</num>
+    </topic>
+    <topic>
+        <name>tech</name>
+        <title>科技</title>
+        <num>4</num>
+    </topic>
+    <topic>
+        <name>ent</name>
+        <title>娱乐</title>
+        <num>5</num>
+    </topic>
+    <topic>
+        <name>mil</name>
+        <title>军事</title>
+        <num>6</num>
+    </topic>
+    <topic>
+        <name>auto</name>
+        <title>汽车</title>
+        <num>7</num>
+    </topic>
+    <topic>
+        <name>others</name>
+        <title>其它</title>
+        <num>8</num>
+    </topic>
+</topics>
+</root>

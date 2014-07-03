@@ -1,7 +1,5 @@
 package com.example.ancached_browser;
 
-import java.util.Date;
-import java.util.Iterator;
 import com.ancached.params.Params;
 import com.ancached.prefetching.Prefetch;
 import com.ancached.prefetching.UtilMethods;
@@ -11,9 +9,9 @@ import com.baidu.location.LocationClientOption;
 import com.example.ancached_browser.R;
 import com.example.model.CacheHelper;
 import com.example.model.CacheManager;
+import com.example.model.ModelManager;
 import com.example.model.MyDBHelper;
 import com.example.service.MyService;
-import com.example.struct.Seed;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo.State;
 import android.os.Bundle;
@@ -55,20 +53,16 @@ public class MainActivity extends Activity {
 	private ServiceConnection connection = new ServiceConnection() {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			// TODO Auto-generated method stub
 			myBinder = (MyService.MyBinder) service;
 		}
 		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			// TODO Auto-generated method stub
-		}
+		public void onServiceDisconnected(ComponentName name) {}
 	};
 
 	// Monitor the network
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			// TODO Auto-generated method stub
 			String action = intent.getAction();
 			if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
 				ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -98,27 +92,16 @@ public class MainActivity extends Activity {
 		
 		Intent bindIntent = new Intent(MainActivity.this, MyService.class);
 		bindService(bindIntent, connection, BIND_AUTO_CREATE);
-		// Network Filter
+
 		IntentFilter netFilter = new IntentFilter();
 		netFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 		registerReceiver(mReceiver, netFilter);
 		getNetState(); 
 		
+		//get location
 		new Thread(new Runnable() {	
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
-				Date curDate = new Date(System.currentTimeMillis());			
-				Date endDate = new Date(System.currentTimeMillis());
-				long diff = endDate.getTime() - curDate.getTime();
-				Log.e("webservice_result", Long.toString(diff));
-			}
-		}).start();
-		
-		new Thread(new Runnable() {	
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
 				mLocClient = ((Location)getApplication()).mLocationClient;
 				((Location)getApplication()).mTv = mTv;
 				mVibrator01 =(Vibrator)getApplication().getSystemService(Service.VIBRATOR_SERVICE);
@@ -128,52 +111,23 @@ public class MainActivity extends Activity {
 			}
 		}).start();
 		
+		//initial
 		new Thread(new Runnable() {		
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
 				MyDBHelper.checkDir();
 				dbHelper = new MyDBHelper(MainActivity.this);
 				SQLiteDatabase db = dbHelper.getDb();
 				dbHelper.onCreate(db);
 				dbHelper.initUrlList();
-				
-				CacheHelper.init();
-				CacheManager.getModel();
-				final String nextUrl = CacheManager.getUrl();
-				Log.i("nextUrl", nextUrl);
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						// TODO Auto-generated method stub
-						CacheHelper.getHTML("http://" + nextUrl);
-						
-						Prefetch.setLaunchTag(1);
-						Prefetch.setPageType(0);
-						String site = UtilMethods.checkSite(nextUrl);
-						String initTopic = CacheManager.getTopic(nextUrl);
-						Prefetch.setUrl("http://" + nextUrl);
-						Prefetch.setSite(site);
-						Prefetch.setTopic(initTopic);
-						Prefetch.setDescription(initTopic);
-						Prefetch.getFeedBack();
-						if (Prefetch.getFb().getSortList() != null) {
-							Iterator<Seed> iter = Prefetch.getFb().getSortList().iterator();
-							int count = 0;int cc = 0;
-							while (iter.hasNext() && count <= 3 && cc < 5) {
-								Seed seed = iter.next();
-								Prefetch.getFetchedMap().put(seed.getUrl(), seed.getData().getDescription());
-								Log.i("cached_url", seed.getUrl());
-								CacheHelper.getHTML(seed.getUrl());
-								cc ++;
-								if (Params.getNET_STATE() != 1)
-									count++;
-							}
-							CacheHelper.showFetchedFiles();
-						}
-					}
-				}).start();
-
+				try {
+					CacheManager.init(getResources().getAssets().open("cfg.xml"));
+					CacheHelper.init();
+					ModelManager.getModel();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				initPages();
 				state = true;
 			}
 		}).start();
@@ -181,8 +135,7 @@ public class MainActivity extends Activity {
 		while(!state){
 			try {
 				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -191,7 +144,6 @@ public class MainActivity extends Activity {
 	}
 
 	private void getNetState() {
-		// TODO Auto-generated method stub
 		ConnectivityManager conMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		State mobile = conMan.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
 				.getState();
@@ -206,9 +158,42 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	private void initPages() {
+		final String nextUrl = CacheManager.getUrl();
+		Log.i("nextUrl", nextUrl);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				CacheHelper.getHTML("http://" + nextUrl);		
+				Prefetch.setLaunchTag(1);
+				Prefetch.setPageType(0);
+				String site = UtilMethods.checkSite(nextUrl);
+				String initTopic = CacheManager.getTopic(nextUrl);
+				Prefetch.setUrl("http://" + nextUrl);
+				Prefetch.setSite(site);
+				Prefetch.setTopic(initTopic);
+				Prefetch.setDescription(initTopic);
+				Prefetch.getFeedBack();
+//				if (Prefetch.getFb().getSortList() != null) {
+//					Iterator<Seed> iter = Prefetch.getFb().getSortList().iterator();
+//					int count = 0;int cc = 0;
+//					while (iter.hasNext() && count <= 3 && cc < 5) {
+//						Seed seed = iter.next();
+//						Prefetch.getFetchedMap().put(seed.getUrl(), seed.getData().getDescription());
+//						Log.i("cached_url", seed.getUrl());
+//						CacheHelper.getHTML(seed.getUrl());
+//						cc ++;
+//						if (Params.getNET_STATE() != 1)
+//							count++;
+//					}
+//					CacheHelper.showFetchedFiles();
+//				}
+			}
+		}).start();
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
@@ -223,8 +208,7 @@ public class MainActivity extends Activity {
 					myBinder.saveLogs();
 					try {
 						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 					MainActivity.this.finish();
@@ -232,9 +216,7 @@ public class MainActivity extends Activity {
 			})
 			.setNegativeButton("·µ»Ø", new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which) {
-						
-				}
+				public void onClick(DialogInterface dialog, int which) {}
 			}).show();
 	} 
 	

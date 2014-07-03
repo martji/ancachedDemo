@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,53 +36,24 @@ public class CacheHelper {
 	public static Map<String, String> cachedList = new ConcurrentHashMap<String, String>();
 	public static Map<String, String> urlList = new HashMap<String, String>();
 	public static Map<String, String> localsite = new HashMap<String, String>();
-	public static Map<String, String> prefix = new HashMap<String, String>();// prefix for sohu...
+	public static Map<String, String> prefix = new HashMap<String, String>();
+	public static Map<String, HashMap<String, String>> cachedPages = new HashMap<String, HashMap<String,String>>();
 
 	public static String APP_PATH = "file:///"
 			+ Environment.getExternalStorageDirectory().getPath()
 			+ "/Ancached_Browser/";
-
 	private static final String PAGE_DIR = "/sdcard/Ancached_Browser/file";
 	private static final String RES_DIR = "/sdcard/Ancached_Browser/res";
-	private static final String CSS_DIR = "/sdcard/Ancached_Browser/css";// won't be deleted
-	/*
-	 * private static int res_size = 0;// present number of res files private
-	 * static int css_size=0;//size of the css files
-	 */
-	private static final Semaphore semaphore = new Semaphore(1);// semaphore for for the file;
+	private static final String CSS_DIR = "/sdcard/Ancached_Browser/css";
+	private static final Semaphore semaphore = new Semaphore(1);
 
-	static {
-		urlList.put("homesites.htm", "http://m.hao123.com");
-		urlList.put("sina.html", "http://sina.cn");
-		urlList.put("sohu.html", "http://m.sohu.com");
-		urlList.put("tecent.html", "http://info.3g.qq.com");
-		urlList.put("ifeng.html", "http://i.ifeng.com");
-		urlList.put("163.html", "http://3g.163.com/touch");
-
-		// TODO:Revalidation
-		localsite.put("http://sina.cn", "sina.html");
-		localsite.put("http://m.sohu.com", "sohu.html");
-		localsite.put("http://info.3g.qq.com", "tecent.html");
-		localsite.put("http://i.ifeng.com", "ifeng.html");
-		localsite.put("http://3g.163.com/touch", "163.html");
-
-		prefix.put("http://sina.cn", "手机新浪网");
-		prefix.put("http://m.sohu.com", "搜狐网");
-		prefix.put("http://info.3g.qq.com", "手机腾讯网");
-		prefix.put("http://i.ifeng.com", "手机凤凰网");
-		prefix.put("http://3g.163.com/touch", "手机网易网");
-	}
-
-	// TODO:Cover instead of delete
 	public static void init() {
 		initPage();
-		// TODO:Replacement policy
 		initRes();
 	}
 
 	public static void initPage() {
 		File fileDir = new File(PAGE_DIR);
-		// Create the dir if it doesn't exist
 		if (!fileDir.exists()){
 			fileDir.mkdir();
 		}
@@ -94,7 +64,6 @@ public class CacheHelper {
 			for (File file : files) {
 				Date dt = new Date(file.lastModified());
 				long time = current_dt.getTime() - dt.getTime();
-				// One day
 				if (file.length() == 0) {
 					file.delete();
 				} else if (time / 1000 / 60 / 60 / 24 >= 1) {
@@ -111,12 +80,7 @@ public class CacheHelper {
 		}
 	}
 
-	/*
-	 * init the res_dir and the res_map
-	 */
-
 	public static void initRes() {
-		// RES DIR
 		File fileDir = new File(RES_DIR);
 		if (!fileDir.exists()){
 			fileDir.mkdir();
@@ -131,7 +95,6 @@ public class CacheHelper {
 				}
 			}
 		}
-
 		File cssDir = new File(CSS_DIR);
 		if (!cssDir.exists()){
 			cssDir.mkdir();
@@ -159,13 +122,16 @@ public class CacheHelper {
 		}
 	}
 	
+	public static String getLocalUrl(String url) {
+		return cachedList.get(url);
+	}
+	
 	public static String getUrl(String url) {
 		if (url.contains("Ancached_Browser/file")){
 			url = urlList.get(url);
 		}
 		if (url.contains("sina") && url.contains("&clicktime")) {
 			url = url.substring(0, url.indexOf("&clicktime"));
-			//url=url.replace("&","&amp;");
 		} else if (url.contains("qq")) {
 			url = url.replaceAll("sid=[^&]*&*", "");
 		}
@@ -179,58 +145,12 @@ public class CacheHelper {
 			return url;
 		} else {
 			url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
-			if (cachedList.containsKey(url))
+			if (cachedList.containsKey(url)) {
 				return url;
+			}
 		}
 		return null;
 	}
-
-	public static String getLocalUrl(String url) {
-		return cachedList.get(url);
-	}
-
-	/*
-	 * cssTag==1 means css file
-	 */
-
-	public static ArrayList<String> urlParser(String address, int cssTag) {
-		String urlRegex = "[a-zA-z]+://[^\\s\"')]*";
-		if (cssTag == 1)
-			urlRegex = "background:url\\([^\\)]*";
-		ArrayList<String> res = new ArrayList<String>();
-		try {
-			BufferedReader bufferReader = new BufferedReader(new FileReader(
-					new File(address)));
-			String line = "";
-			StringBuffer sBuffer = new StringBuffer();
-			while ((line = bufferReader.readLine()) != null) {
-				sBuffer.append(line);
-			}
-			line = sBuffer.toString();
-			bufferReader.close();
-
-			// Regex
-			Pattern p = Pattern.compile(urlRegex);
-			Matcher m = p.matcher(line);
-			while (m.find()) {
-				String link = m.group();
-				if (containsCssJsPic(link)) {
-					res.add(link);
-				}
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return res;
-	}
-
-	/**
-	 * some srcs are in hrefs, use checkCssJsPic to separate them
-	 * 
-	 * @param url the url
-	 */
 
 	private static boolean containsCssJsPic(String url) {
 		if (url.contains(".jpg") || url.contains(".css") || url.contains(".js")
@@ -242,34 +162,64 @@ public class CacheHelper {
 	}
 
 	private static String resType(String url) {
-		if (url.contains(".jpg"))
+		if (url.contains(".jpg")) {
 			return "jpg";
-		else if (url.contains(".css"))
+		} else if (url.contains(".css")) {
 			return "css";
-		else if (url.contains(".js"))
+		} else if (url.contains(".js")) {
 			return "js";
-		else if (url.contains(".png"))
+		} else if (url.contains(".png")) {
 			return "png";
-		else if (url.contains(".jpeg"))
+		} else if (url.contains(".jpeg")) {
 			return "jpeg";
-		else
+		} else {
 			return "gif";
+		}
 	}
 
 	/*
 	 * get the suffix of the url
 	 */
-
 	@SuppressWarnings("unused")
 	private static String getSuffix(String url) {
 		String suffix = url.substring(url.lastIndexOf("/") + 1, url.length());
 		return suffix;
 	}
-
+	
+	public static void getCssRES(String originURL, String localAddress, String ftpaddress) {
+		ArrayList<String> resList = urlParser(localAddress, 1);
+		Iterator<String> iter = resList.iterator();
+		ExecutorService exec = Executors.newCachedThreadPool();
+		while (iter.hasNext()) {
+			String url = iter.next();
+			if (url.startsWith("background")) {
+				// TODO other web sites except sina.cn
+				String urlPrefix = originURL.substring(0,
+						originURL.lastIndexOf("/"));
+				urlPrefix = urlPrefix.substring(0, urlPrefix.lastIndexOf("/"));
+				url = url.substring(url.indexOf("/"));
+				url = urlPrefix + url;
+			}
+			if (!cachedList.containsKey(url)) {
+				getResThread grt = new getResThread(localAddress, url, 1);
+				cachedList.put(url, url);
+				exec.execute(grt);
+			}
+		}
+		exec.shutdown();
+		while (!exec.isTerminated()){
+			try {
+				Thread.sleep(200);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		reviseFile(localAddress, originURL, ftpaddress);
+	}
+	
 	/*
 	 * download the res in the css file
 	 */
-
 	public static class getCssRESThread implements Runnable {
 		String url = "";
 		String localaddress = "";
@@ -281,83 +231,56 @@ public class CacheHelper {
 			this.localaddress = localAddress;
 			this.ftpaddress = ftpAddress;
 		}
-
 		@Override
 		public void run() {
-			// TODO Auto-generated method stub
 			getCssRES(url, localaddress, ftpaddress);
 		}
-
-	}
-
-	public static void getCssRES(String originURL, String localAddress,
-			String ftpaddress) {
-		ArrayList<String> resList = urlParser(localAddress, 1);
-		Iterator<String> iter = resList.iterator();
-		ExecutorService exec = Executors.newCachedThreadPool();
-		while (iter.hasNext()) {
-			String url = iter.next();
-			if (url.startsWith("background")) {
-				// TODO other websites except sina
-				String urlPrefix = originURL.substring(0,
-						originURL.lastIndexOf("/"));
-				urlPrefix = urlPrefix.substring(0, urlPrefix.lastIndexOf("/"));
-				url = url.substring(url.indexOf("/"));
-				url = urlPrefix + url;
-			}
-			if (!cachedList.containsKey(url)) {
-				getResThread grt = new getResThread(url, 1);
-				cachedList.put(url, url);
-				exec.execute(grt);
-			}
-		}
-		exec.shutdown();
-		reviseFile(localAddress, originURL, ftpaddress);
 	}
 
 	/*
 	 * download the res in the htmlPage
 	 */
-
-	public static void getRES(ArrayList<String> resList, String htmlPath) {
+	public static void getRES(String htmlPath) {
+		ArrayList<String> resList  = urlParser(htmlPath, 0);
 		Iterator<String> iter = resList.iterator();
 		ExecutorService exec = Executors.newCachedThreadPool();
 		while (iter.hasNext()) {
 			String url = iter.next();
 			if (!cachedList.containsKey(url)) {
-				getResThread grt = new getResThread(url, 0);
+				getResThread grt = new getResThread(htmlPath, url, 0);
 				cachedList.put(url, url);
 				exec.execute(grt);
 			}
 		}
 		exec.shutdown();
+		while (!exec.isTerminated()){
+			try {
+				Thread.sleep(200);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		reviseFile(htmlPath, null, null);
 	}
 
-	/*
-	 * get res thread
-	 */
-
 	public static class getResThread implements Runnable {
 		String url = "";
-		int tag = 0;// tag=1 means css res
-
-		public getResThread(String Address, int cssTag) {
+		String fatherUrl = "";
+		int tag = 0;
+		public getResThread(String fatherAddress, String Address, int cssTag) {
 			this.url = Address;
 			this.tag = cssTag;
+			this.fatherUrl = fatherAddress;
 		}
-
 		@Override
 		public void run() {
 			try {
 				String type = resType(url);
 				URL urlAddr = new URL(url);
-				HttpURLConnection connection = (HttpURLConnection) urlAddr
-						.openConnection();
+				HttpURLConnection connection = (HttpURLConnection) urlAddr.openConnection();
 				connection.setConnectTimeout(200);
 				InputStream inStream = connection.getInputStream();
 
-				// Semaphore
 				semaphore.acquire();
 				long time = System.currentTimeMillis();
 				String absoluteAddress = "";
@@ -377,9 +300,9 @@ public class CacheHelper {
 				semaphore.release();
 
 				File file = new File(absoluteAddress);
-				// Create new file if id doesn't exist
-				if (!file.exists())
+				if (!file.exists()) {
 					file.createNewFile();
+				}
 				FileOutputStream fout = new FileOutputStream(file);
 				byte[] buffer = new byte[1024];
 				int len = 0;
@@ -390,24 +313,21 @@ public class CacheHelper {
 				inStream.close();
 				fout.close();
 				cachedList.put(url, ftpAddress);
+				if (!cachedPages.containsKey(fatherUrl)){
+					cachedPages.put(fatherUrl, new HashMap<String, String>());
+				}
+				cachedPages.get(fatherUrl).put(url, ftpAddress);
 				MyDBHelper.insertCachedTable(ftpAddress, url);
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
 	/*
-	 * revise the html
+	 * revise the HTML
 	 */
-
-	public static void reviseFile(String localAddress, String originURL,
-			String ftpAddress) {
-		// TODO:test
+	public static void reviseFile(String localAddress, String originURL, String ftpAddress) {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(localAddress));
 			String line = "";
@@ -417,7 +337,7 @@ public class CacheHelper {
 			}
 			line = buffer.toString();
 			br.close();
-			Map<String, String> localCachedlist = cachedList;
+			Map<String, String> localCachedlist = cachedPages.get(localAddress);
 			Iterator<Entry<String, String>> iter = localCachedlist.entrySet().iterator();
 			while (iter.hasNext()) {
 				Entry<String, String> entry = iter.next();
@@ -479,7 +399,6 @@ public class CacheHelper {
 				fos.close();
 				os.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -487,21 +406,18 @@ public class CacheHelper {
 	}
 	
 	/*
-	 * download the webpage
+	 * download the web page
 	 */
-
 	public static void getHTML(String address) {
 		try {
 			if (!cachedList.containsKey(address)) {
-				// No need for user-agent
 				semaphore.acquire();
 				long time = System.currentTimeMillis();
 				semaphore.release();
-				
 				String absoluteAddress = PAGE_DIR + "/" + time + ".html";
 				String ftpAddress = APP_PATH + "file/" + time + ".html";
 				File file = new File(absoluteAddress);
-				// Create new file if id doesn't exist
+				
 				if (!file.exists())
 					file.createNewFile();
 				URL url = new URL(address);
@@ -521,9 +437,7 @@ public class CacheHelper {
 				cachedList.put(address, ftpAddress);
 				MyDBHelper.insertCachedTable(ftpAddress, address);
 				urlList.put(ftpAddress,address);
-
-				// TODO:prefetch the resources
-				getRES(urlParser(absoluteAddress, 0), absoluteAddress);
+				getRES(absoluteAddress);
 			} else {
 				String localFTP = cachedList.get(address);
 				localFTP = localFTP.replace(APP_PATH + "file/", PAGE_DIR + "/");
@@ -535,7 +449,6 @@ public class CacheHelper {
 					Date dt = new Date(file.lastModified());
 					Date current_dt = new Date();
 					long time = current_dt.getTime() - dt.getTime();
-					// 30 minutes
 					if (time / 1000 / 60 / 30 >= 1) {
 						file.delete();
 						cachedList.remove(address);
@@ -546,5 +459,40 @@ public class CacheHelper {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/*
+	 * cssTag==1 means css file
+	 */
+	public static ArrayList<String> urlParser(String address, int cssTag) {
+		String urlRegex = "[a-zA-z]+://[^\\s\"')]*";
+		if (cssTag == 1){
+			urlRegex = "background:url\\([^\\)]*";
+		}
+		ArrayList<String> res = new ArrayList<String>();
+		try {
+			BufferedReader bufferReader = new BufferedReader(new FileReader(new File(address)));
+			String line = "";
+			StringBuffer sBuffer = new StringBuffer();
+			while ((line = bufferReader.readLine()) != null) {
+				sBuffer.append(line);
+			}
+			line = sBuffer.toString();
+			bufferReader.close();
+
+			Pattern p = Pattern.compile(urlRegex);
+			Matcher m = p.matcher(line);
+			while (m.find()) {
+				String link = m.group();
+				if (containsCssJsPic(link)) {
+					res.add(link);
+				}
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return res;
 	}
 }
