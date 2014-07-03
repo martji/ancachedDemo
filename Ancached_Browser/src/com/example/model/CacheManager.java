@@ -43,6 +43,8 @@ public class CacheManager {
 	private static final int ITEM_COUNT = 6;
 	private static final int PAGE_COUNT = 22;
 	
+	public static String current_site = "";
+	
 //	static {
 //		SITESTITLE.put(HAO, "hao123导航-上网从这里开始");
 //		model_sites.put(TECENT+"-index", 6);
@@ -118,7 +120,7 @@ public class CacheManager {
 		}
 		else {
 			n_url = CacheManager.urlMap.containsKey(url) ? 
-					CacheManager.urlMap.get(url).getType() : "others";
+					CacheManager.urlMap.get(url).getType() : current_site + "-others";
 		}
 		return n_url;
 	}

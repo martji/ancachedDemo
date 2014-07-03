@@ -338,17 +338,19 @@ public class CacheHelper {
 			line = buffer.toString();
 			br.close();
 			Map<String, String> localCachedlist = cachedPages.get(localAddress);
-			Iterator<Entry<String, String>> iter = localCachedlist.entrySet().iterator();
-			while (iter.hasNext()) {
-				Entry<String, String> entry = iter.next();
-				String key = entry.getKey();
-				String value = entry.getValue();
-				if(Prefetch.getFetchedMap().containsKey(key)){
-					String tmpKey = Prefetch.getFetchedMap().get(key);
-					line = line.replace(Prefetch.getFetchedMap().get(key), "<font color=red>"+tmpKey+"</font>");
-				}
-				else if (key != "") {
-					line = line.replace(key, value);
+			if (localCachedlist != null && localCachedlist.size() > 0){
+				Iterator<Entry<String, String>> iter = localCachedlist.entrySet().iterator();
+				while (iter.hasNext()) {
+					Entry<String, String> entry = iter.next();
+					String key = entry.getKey();
+					String value = entry.getValue();
+					if(Prefetch.getFetchedMap().containsKey(key)){
+						String tmpKey = Prefetch.getFetchedMap().get(key);
+						line = line.replace(Prefetch.getFetchedMap().get(key), "<font color=red>"+tmpKey+"</font>");
+					}
+					else if (key != "") {
+						line = line.replace(key, value);
+					}
 				}
 			}
 			if (localAddress.contains("unparsed")) {

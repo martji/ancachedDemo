@@ -66,10 +66,8 @@ public class MainActivity extends Activity {
 			String action = intent.getAction();
 			if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
 				ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-				State mobile = cm.getNetworkInfo(
-						ConnectivityManager.TYPE_MOBILE).getState();
-				State wifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-						.getState();
+				State mobile = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState();
+				State wifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
 				if (wifi == State.CONNECTED) {
 					Params.setNET_STATE(1);
 				} else if (mobile == State.CONNECTED) {
@@ -145,15 +143,13 @@ public class MainActivity extends Activity {
 
 	private void getNetState() {
 		ConnectivityManager conMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		State mobile = conMan.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
-				.getState();
-		State wifi = conMan.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-				.getState();
+		State mobile = conMan.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState();
+		State wifi = conMan.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
 		if (wifi == State.CONNECTED) {
 			Params.setNET_STATE(1);
 		} else if (mobile == State.CONNECTED) {
 			Params.setNET_STATE(2);
-		}else{
+		} else {
 			Params.setNET_STATE(0);
 		}
 	}
